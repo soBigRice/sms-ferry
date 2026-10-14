@@ -4,6 +4,8 @@
 
 应用显示名为“信渡”，Gradle 项目名为 `SmsFerry`；包名 / applicationId 保持 `com.sobigrice.smsrelay`，兼容原有安装及加密配置。邮件标题前缀与发件人显示名同步为“信渡”。`deliverables/` 是不随源码发布的本地验收记录。
 
+官网为 `site/` 纯静态页，GitHub Pages 工作流只上传该目录，APK 放在 Releases；发布与维护入口见 [官网说明](docs/website.md)。
+
 ## 入口与职责
 
 | 文件 / 符号 | 职责 |

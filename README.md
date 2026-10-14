@@ -6,6 +6,8 @@
 
 A lightweight Android app that forwards SMS to email, without a relay server.
 
+[官网](https://sobigrice.github.io/sms-ferry/) · [下载 0.2.1 预览版 APK](https://github.com/soBigRice/sms-ferry/releases/download/v0.2.1/sms-ferry-0.2.1-debug.apk) · [版本说明](https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.1)
+
 当前版本为早期个人自用工具，主要在三星 S21 / One UI 7（Android 15）上验证；最低支持 Android 8.0，不代表所有设备都已实测。仅使用于你有权管理的手机和短信。
 
 ## 安全与隐私

@@ -1,0 +1,10 @@
+{
+  "version": "0.2.1",
+  "versionCode": 6,
+  "channel": "preview",
+  "minAndroid": "8.0",
+  "bytes": 12693019,
+  "sha256": "bcef3dd66336d851a3e5d56b750dd84c6179417364b8c82a97b786c828c140c4",
+  "apkUrl": "https://github.com/soBigRice/sms-ferry/releases/download/v0.2.1/sms-ferry-0.2.1-debug.apk",
+  "releaseUrl": "https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.1"
+}

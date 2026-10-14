@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#176b4c">
+  <title>信渡 · SMS Ferry — 把短信，渡到你身边</title>
+  <meta name="description" content="信渡是一款 MIT 开源的 Android 短信转发工具。自定义 SMTP 邮箱，本机加密配置，断网排队。下载 Android APK，三步开始使用。">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="信渡 · SMS Ferry — 把短信，渡到你身边">
+  <meta property="og:description" content="收到新短信，直接发送到你的邮箱。轻量 Android 工具，MIT 开源。">
+  <meta property="og:url" content="https://sobigrice.github.io/sms-ferry/">
+  <link rel="canonical" href="https://sobigrice.github.io/sms-ferry/">
+  <link rel="icon" href="./assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script src="./main.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到主要内容</a>
+  <div class="page">
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="信渡首页"><img src="./assets/logo.svg" width="48" height="48" alt=""><span><strong>信渡</strong><small>SMS Ferry</small></span></a>
+      <nav aria-label="主要导航"><a class="section-link" href="#features">功能</a><a class="section-link" href="#start">开始使用</a><a href="https://github.com/soBigRice/sms-ferry" target="_blank" rel="noopener noreferrer">GitHub <span aria-hidden="true">↗</span></a></nav>
+    </header>
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <h1 id="hero-title"><span>把短信，</span><span>渡到你身边。</span></h1>
+          <p class="hero-description">收到新短信，直接发送到你的邮箱。<br>备用安卓手机，也能把重要消息送到常用设备。</p>
+          <div class="hero-actions">
+            <a class="button primary" data-download href="https://github.com/soBigRice/sms-ferry/releases/download/v0.2.1/sms-ferry-0.2.1-debug.apk"><span class="download-icon" aria-hidden="true"></span>下载 Android APK</a>
+            <a class="button secondary" href="https://github.com/soBigRice/sms-ferry" target="_blank" rel="noopener noreferrer">查看源码 <span aria-hidden="true">↗</span></a>
+          </div>
+          <p class="release-meta" data-release-meta>0.2.1 预览版 · Android 8.0+ · 12.7 MB</p>
+        </div>
+        <figure class="hero-art">
+          <img src="./assets/ferry-route.svg" width="650" height="420" alt="短信从安卓手机，经由信封小舟，直接送到邮箱的示意图">
+          <figcaption><span>手机短信</span><span>你的邮箱</span></figcaption>
+        </figure>
+      </section>
+
+      <section class="features" id="features" aria-label="信渡的功能">
+        <article class="feature"><img src="./assets/icons/settings.svg" width="40" height="40" alt=""><div><h2>邮箱自由配置</h2><p>自定义 SMTP 服务器、端口和登录信息，支持 SSL/TLS 与 STARTTLS。</p></div></article>
+        <article class="feature"><img src="./assets/icons/list.svg" width="40" height="40" alt=""><div><h2>断网也能排队</h2><p>新短信先在本机入队，网络恢复后继续发送。状态和记录都可核对。</p></div></article>
+        <article class="feature"><img src="./assets/icons/shield-check.svg" width="40" height="40" alt=""><div><h2>配置留在本机</h2><p>凭据与排队短信本地加密保存，发信直连你的 SMTP，无中转服务器。</p></div></article>
+      </section>
+
+      <section class="getting-started" id="start" aria-labelledby="start-title">
+        <div class="setup">
+          <h2 id="start-title">三步完成设置</h2>
+          <ol class="steps">
+            <li><span class="step-number" aria-hidden="true">1</span><div><h3>配置 SMTP</h3><p>填写服务商提供的服务器、端口、用户名和密码，以及接收邮箱。</p></div></li>
+            <li><span class="step-number" aria-hidden="true">2</span><div><h3>发送测试邮件</h3><p>保存配置，发送一封测试邮件，到接收邮箱确认连接正常。</p></div></li>
+            <li><span class="step-number" aria-hidden="true">3</span><div><h3>开启转发</h3><p>允许短信权限，开启转发。按运行检查设置通知和后台权限。</p></div></li>
+          </ol>
+          <a class="text-link" href="https://github.com/soBigRice/sms-ferry#安装与首次设置" target="_blank" rel="noopener noreferrer">查看完整使用说明 <span aria-hidden="true">↗</span></a>
+        </div>
+        <aside class="download-panel" id="download" aria-labelledby="download-title">
+          <h2 id="download-title">下载信渡 · SMS Ferry</h2>
+          <p class="panel-meta" data-release-meta>0.2.1 预览版 · Android 8.0+ · 12.7 MB</p>
+          <a class="button primary full-width" data-download href="https://github.com/soBigRice/sms-ferry/releases/download/v0.2.1/sms-ferry-0.2.1-debug.apk"><span class="download-icon" aria-hidden="true"></span>下载 Android APK</a>
+          <a class="release-link" data-release-link href="https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.1" target="_blank" rel="noopener noreferrer">版本说明与其他下载方式 <span aria-hidden="true">↗</span></a>
+          <div class="install-hints"><h3>安装提示</h3><ul><li>下载后，在安卓手机上打开 APK 安装。</li><li>如果系统阻止安装，在设置中允许当前浏览器或文件管理器安装应用。</li><li>更新请使用相同签名的 APK 直接覆盖安装，保留配置和记录。不要卸载或清除数据。</li></ul></div>
+          <details class="checksum"><summary>安装包校验 · SHA-256</summary><code id="apk-checksum">bcef3dd66336d851a3e5d56b750dd84c6179417364b8c82a97b786c828c140c4</code><button type="button" id="copy-checksum">复制校验值</button><span id="copy-result" role="status" aria-live="polite"></span></details>
+        </aside>
+      </section>
+
+      <aside class="delivery-note"><span class="note-symbol" aria-hidden="true">i</span><div><h2>关于送达</h2><p>邮件到达与通知速度取决于运营商、网络、系统后台调度和邮箱服务商。“服务器已接收”不等于已读。当前为预览版，欢迎在 GitHub 反馈体验。</p></div></aside>
+
+      <section class="faq" aria-labelledby="faq-title"><h2 id="faq-title">你可能想知道</h2><div class="faq-list">
+        <details><summary>支持哪些手机和邮箱？</summary><p>最低 Android 8.0，主要验证设备为三星 S21 / Android 15，不代表所有机型均已实测。支持以用户名与密码、授权码或应用专用密码登录的 SMTP 服务；仅支持 OAuth 的登录方式暂不支持。接收邮箱不需要在信渡中配置 POP3 或 IMAP。</p></details>
+        <details><summary>短信会经过谁的服务器？</summary><p>应用直接连接你配置的 SMTP 服务，不经过作者运营的服务器。短信的来源号码、接收时间和完整正文会发送到接收邮箱，验证码不会自动隐藏；邮箱服务商和已登录邮箱的设备可能接触内容。本地加密与 TLS 不等于端到端加密。仅在自己或明确获授权的设备和邮箱上使用。</p><a class="text-link" href="https://github.com/soBigRice/sms-ferry/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer">安全与隐私声明 ↗</a></details>
+        <details><summary>安装后没有短信权限，怎么办？</summary><p>短信读取属于 Android 受限权限，安装器和用户授权都需要允许。如果没有短信权限开关，先按仓库说明检查安装方式。三星还建议加入“从不休眠的应用”；不要为排查卸载或清除数据。</p><a class="text-link" href="https://github.com/soBigRice/sms-ferry#安装与首次设置" target="_blank" rel="noopener noreferrer">查看安装与权限说明 ↗</a></details>
+      </div></section>
+    </main>
+    <footer class="site-footer"><a class="footer-brand" href="./"><img src="./assets/logo.svg" width="40" height="40" alt=""><span><strong>信渡 · SMS Ferry</strong><small>把短信，渡到你身边。</small></span></a><div><a href="https://github.com/soBigRice/sms-ferry/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT 开源</a><a href="https://github.com/soBigRice/sms-ferry/blob/main/README.md#免责声明" target="_blank" rel="noopener noreferrer">使用声明</a><a href="https://github.com/soBigRice/sms-ferry" target="_blank" rel="noopener noreferrer">GitHub ↗</a></div></footer>
+  </div>
+</body>
+</html>
