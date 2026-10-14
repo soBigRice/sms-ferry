@@ -6,7 +6,7 @@
 
 A lightweight Android app that forwards SMS to email, without a relay server.
 
-[官网](https://sobigrice.github.io/sms-ferry/) · [下载 0.2.1 预览版 APK](https://github.com/soBigRice/sms-ferry/releases/download/v0.2.1/sms-ferry-0.2.1-debug.apk) · [版本说明](https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.1)
+[官网](https://sobigrice.github.io/sms-ferry/) · [下载 0.2.2 预览版 APK](https://github.com/soBigRice/sms-ferry/releases/download/v0.2.2/sms-ferry-0.2.2-debug.apk) · [版本说明](https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.2)
 
 当前版本为早期个人自用工具，主要在三星 S21 / One UI 7（Android 15）上验证；最低支持 Android 8.0，不代表所有设备都已实测。仅使用于你有权管理的手机和短信。
 
@@ -64,9 +64,9 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 
 ## 应用内更新
 
-开发中的 0.2.2 增加首页「检查更新」：从 [GitHub Releases](https://github.com/soBigRice/sms-ferry/releases) 获取新版本，支持预览版；下载后校验安装包，再由 Android 确认安装。首次需手动安装含此入口的 APK，之后可在应用内升级。必须沿用相同包名与签名；覆盖安装保留邮箱配置和记录。更新失败不改变转发设置。
+0.2.2 增加首页「检查更新」：从 [GitHub Releases](https://github.com/soBigRice/sms-ferry/releases) 获取新版本，支持预览版；下载后校验安装包，再由 Android 确认安装。首次需手动安装含此入口的 APK，之后可在应用内升级。必须沿用相同包名与签名；覆盖安装保留邮箱配置和记录。更新失败不改变转发设置。
 
-更新契约、签名要求与后续发版步骤见 [GitHub 应用更新](docs/updates.md)。公开下载链接继续指向已发布版本，未发布的本地包不冒充 Release。
+更新契约、签名要求与后续发版步骤见 [GitHub 应用更新](docs/updates.md)。公开下载链接指向 GitHub Release，安装包不进入源码历史。
 
 ## 本地开发
 
