@@ -1,0 +1,18 @@
+.gradle/
+.kotlin/
+build/
+app/build/
+local.properties
+*.jks
+*.keystore
+.idea/
+*.iml
+captures/
+.DS_Store
+
+# Local APKs, screenshots and device verification records are not source releases.
+deliverables/
+.env
+.env.*
+*.p12
+*.log
