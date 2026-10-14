@@ -31,31 +31,36 @@ assert re.fullmatch(r"[a-f0-9]{64}", release["sha256"]), "Invalid SHA-256"
 assert isinstance(release["bytes"], int) and release["bytes"] > 0, "Invalid APK size"
 assert release["apkUrl"] == f"{REPO}/releases/download/v{version}/sms-ferry-{version}-debug.apk"
 assert release["releaseUrl"] == f"{REPO}/releases/tag/v{version}"
-html = (SITE / "index.html").read_text()
-page = Page()
-page.feed(html)
-assert html.count(release["sha256"]) == 1, "Update the no-JS checksum fallback"
-assert f"{version} 预览版 · Android {release['minAndroid']}+ · {release['bytes']/1_000_000:.1f} MB" in html
-assert len([tag for tag, attrs in page.tags if tag == "h1"]) == 1
-downloads = [attrs for tag, attrs in page.tags if tag == "a" and "data-download" in attrs]
-assert len(downloads) == 2 and all(a["href"] == release["apkUrl"] for a in downloads), "Update both no-JS download links"
-for tag, attrs in page.tags:
-    if tag == "img":
-        assert "alt" in attrs and "width" in attrs and "height" in attrs, "Images need alt and dimensions"
-    if attrs.get("target") == "_blank":
-        assert {"noopener", "noreferrer"} <= set(attrs.get("rel", "").split()), "Missing external link protection"
-    for key in ["src", "href"]:
-        value = attrs.get(key, "")
-        if not value:
-            continue
-        url = urlsplit(value)
-        if url.scheme or url.netloc:
-            continue
-        assert not url.path.startswith("/"), f"Project Pages needs relative paths: {value}"
-        if url.fragment:
-            assert url.fragment in page.ids, f"Broken local anchor: {value}"
-        if url.path:
-            target = (SITE / unquote(url.path)).resolve()
-            assert target.is_relative_to(SITE.resolve()) and target.exists(), f"Missing asset: {value}"
+for filename, language, preview in [("index.html", "zh-CN", "预览版"), ("en.html", "en", "Preview")]:
+    html = (SITE / filename).read_text()
+    page = Page()
+    page.feed(html)
+    assert f'<html lang="{language}">' in html
+    assert html.count(release["sha256"]) == 1, f"Update the no-JS checksum in {filename}"
+    assert f"{version} {preview} · Android {release['minAndroid']}+ · {release['bytes']/1_000_000:.1f} MB" in html
+    assert len([tag for tag, attrs in page.tags if tag == "h1"]) == 1
+    downloads = [attrs for tag, attrs in page.tags if tag == "a" and "data-download" in attrs]
+    assert len(downloads) == 2 and all(a["href"] == release["apkUrl"] for a in downloads), f"Update both no-JS download links in {filename}"
+    languages = [attrs for tag, attrs in page.tags if "data-language" in attrs]
+    assert {a["data-language"] for a in languages} == {"zh", "en"}
+    assert [a["data-language"] for a in languages if a.get("aria-current") == "page"] == [language[:2]]
+    for tag, attrs in page.tags:
+        if tag == "img":
+            assert "alt" in attrs and "width" in attrs and "height" in attrs, "Images need alt and dimensions"
+        if attrs.get("target") == "_blank":
+            assert {"noopener", "noreferrer"} <= set(attrs.get("rel", "").split()), "Missing external link protection"
+        for key in ["src", "href"]:
+            value = attrs.get(key, "")
+            if not value:
+                continue
+            url = urlsplit(value)
+            if url.scheme or url.netloc:
+                continue
+            assert not url.path.startswith("/"), f"Project Pages needs relative paths: {value}"
+            if url.fragment:
+                assert url.fragment in page.ids, f"Broken local anchor: {value}"
+            if url.path:
+                target = (SITE / unquote(url.path)).resolve()
+                assert target.is_relative_to(SITE.resolve()) and target.exists(), f"Missing asset: {value}"
 assert (SITE / "assets/icons/LICENSE").is_file(), "Missing vendored icon license"
-print(f"Website check passed: v{version}, 2 download links, all local assets and anchors present")
+print(f"Website check passed: v{version}, Chinese + English, 4 download links, all local assets and anchors present")

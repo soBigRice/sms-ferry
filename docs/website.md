@@ -4,14 +4,18 @@
 
 ## 入口与发布
 
-- `site/index.html` / `styles.css`：语义化单页、移动布局、键盘焦点、原生 details；不使用构建框架或外部字体。
-- `site/main.js`：同源读取 `release.json`、增强校验值复制。下载链接与版本已内置 HTML，JS / JSON 加载失败时仍能下载；只允许本仓库 Releases URL。
+- `site/index.html` / `en.html` / `styles.css`：完整中文 / 英文静态页、移动布局、键盘焦点、原生 details；不使用构建框架或外部字体。导航、安装提示、FAQ、图片替代文本和页面元信息均双语；仓库里的中文使用 / 隐私文档链接在英文页注明 Chinese。
+- `site/main.js`：浏览器语言默认选择、手动语言记忆、同源读取 `release.json`、双语校验值复制反馈。下载链接与版本已内置两页 HTML，JS / JSON 加载失败时仍能阅读与下载；只允许本仓库 Releases URL。
 - `site/release.json`：当前 APK 版本、字节数、SHA-256、不可变版本下载链接。预览包不用 `releases/latest/download`，避免 GitHub 排除 prerelease 后产生 404。
-- `scripts/check-site.py`：标准库检查 HTML 与 release.json 的版本 / 下载 / 校验一致性、相对资源、锚点和第三方许可；更新版本时同时更新 HTML 无 JS 的回退内容。
+- `scripts/check-site.py`：标准库检查两种语言 HTML 与 release.json 的版本 / 下载 / 校验一致性、语言选择、相对资源、锚点和第三方许可；更新版本时同时更新两页 HTML 无 JS 的回退内容。
 - `.github/workflows/pages.yml`：main 的官网修改触发，官方 Pages Actions 按完整 SHA 固定；仅上传 `site/`，不发布源码、测试记录、手机核对副本或本地 deliverables。
 - APK 发布到 GitHub Releases `v0.2.1`（prerelease）。源提交 `f9f3afc81ca6cf40e79a51d92ed861c30444cd6e`，不是把 APK 提交进 Git 历史。相同包名与签名覆盖升级才能保留原数据；当前 Debug 签名包如实标为预览版。
 
 本地预览：`python3 -m http.server 8765 --bind 127.0.0.1 --directory site`。发布前运行 `python3 scripts/check-site.py`，查看桌面 / 手机并核对在线 APK 下载的 SHA-256。结束时关闭临时服务器，删除下载核对副本。
+
+语言选择优先级：显式 `?lang=zh/en` 或英文页直达 → 本地记忆 → 浏览器首选语言；中文浏览器默认中文，其余回退英文。右上角原生链接切换并保留当前锚点；`localStorage` 不可用时靠 URL 明确选择，不导致异常或反复跳转。两页分别有 `lang`、canonical 与 hreflang，所有下载与校验信息均静态内置；不是靠 JS 隐藏另一种语言。
+
+2026-10-14 双语改动本地浏览器核对：中英各 320 / 360 / 390 / 768 / 1280 宽度无横向溢出，查看了桌面中文 / 英文及手机英文实际渲染；手动切换、刷新记忆、锚点保留、浏览器默认、英文页直达、FAQ、双语复制成功 / 拒绝反馈通过。复制成功用内存剪贴板替身验证传入完整 SHA-256，未改用户剪贴板；阻止页面脚本时两页仍有内容、下载与校验信息。页面未出现产品运行错误。仅本地核对；双语官网未在本轮推送或发布，线上仍是下述历史中文版本，主观视觉验收待确认。
 
 GitHub Pages 设置为 Actions 构建，网址 `https://sobigrice.github.io/sms-ferry/`。部署完成需检查对应 Actions run、HTTPS 页面和实际 APK 响应，工作流成功不代替用户视觉验收。
 

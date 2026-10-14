@@ -94,10 +94,39 @@ a:focus-visible,button:focus-visible,summary:focus-visible {
 }
 .site-header nav {
   display:flex;
-  gap:36px;
+  gap:24px;
   align-items:center;
   font-size:16px;
   font-weight:650;
+}
+.header-actions {
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:flex-end;
+  gap:24px;
+}
+.language-switch {
+  display:flex;
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:3px;
+  font-size:13px;
+}
+.language-switch a {
+  padding:7px 11px;
+  border-radius:20px;
+}
+.language-switch a[aria-current="page"] {
+  color:white;
+  background:var(--green);
+}
+html[lang="en"] .hero h1 {
+  white-space:normal;
+  line-height:1.15;
+}
+html[lang="en"] .hero h1 span {
+  display:block;
 }
 .site-header nav a {
   padding:8px 0;
@@ -597,7 +626,14 @@ summary {
   .site-header {
     min-height:84px;
     padding:16px 0;
+    flex-wrap:wrap;
+    gap:14px;
   }
+  .header-actions {
+    flex:1;
+    gap:12px;
+  }
+  html[lang="en"] .brand strong { font-size:22px; }
   .brand {
     gap:11px;
   }

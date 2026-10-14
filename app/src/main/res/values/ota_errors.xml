@@ -1,0 +1,24 @@
+<resources>
+    <string name="ota_error_current_version">The installed version format is unsupported. Updates cannot be compared safely.</string>
+    <string name="ota_error_invalid_version">The GitHub release version format is invalid.</string>
+    <string name="ota_error_invalid_metadata">The update information is invalid. Please try again later.</string>
+    <string name="ota_error_missing_digest">The release APK has no valid SHA-256 digest. The publisher needs to upload it again.</string>
+    <string name="ota_error_not_newer">The update must be newer than the installed version.</string>
+    <string name="ota_error_channel">This APK does not match the installed build channel.</string>
+    <string name="ota_error_max_size">The update response or package size is unsupported.</string>
+    <string name="ota_error_invalid_url">The GitHub download URL is invalid.</string>
+    <string name="ota_error_redirect">The GitHub download redirected to an unsupported address.</string>
+    <string name="ota_error_incomplete">The download is incomplete. Please download it again.</string>
+    <string name="ota_error_checksum">The package checksum did not match. Please download it again.</string>
+    <string name="ota_error_package">This package belongs to a different app. Installation was refused.</string>
+    <string name="ota_error_version_code">The APK version code did not increase. Installation was refused.</string>
+    <string name="ota_error_version_name">The APK version does not match the release. Installation was refused.</string>
+    <string name="ota_error_signature">The APK signature differs from the installed app. Installation was refused.</string>
+    <string name="ota_error_storage">The update could not be saved. Please check free storage and try again.</string>
+    <string name="ota_error_invalid_apk">This is not a valid Android APK. Installation was refused.</string>
+    <string name="ota_error_rate_limit">GitHub has limited update requests. Please try again later.</string>
+    <string name="ota_error_not_found">The release or APK is unavailable. Please try again later.</string>
+    <string name="ota_error_service">The GitHub update service is unavailable. Please try again later.</string>
+    <string name="ota_error_timeout">The update request timed out. Please try again.</string>
+    <string name="ota_error_network">Cannot connect to GitHub. Check your connection and try again.</string>
+</resources>

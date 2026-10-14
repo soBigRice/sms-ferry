@@ -47,6 +47,7 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 - 授权码与排队短信加密保存，禁止备份这些私有数据；已发送本地记录 30 天后清理，未成功记录保留。
 - 前台通知、手动暂停、状态、问题记录核对和重试。
 - Compose + Material 3 界面，跟随系统深浅色及 Android 12+ 动态配色；首页紧凑状态卡、3 类运行检查与最近记录，更多入口保留记录详情。
+- 中英文界面默认跟随系统；首页底部“语言 / Language”可选中文、English 或跟随系统。Android 13+ 也可从系统“应用语言”选择。设置、运行状态、记录说明、错误提示和通知均按当前语言显示；切换不会修改邮箱配置或队列。
 - 首页只读邮箱摘要，配置移到独立设置页；测试邮件与开始转发使用已保存设置，不会悄悄保存输入。修改时测试按钮禁用，保存后才可测试。
 - 发送账号、接收地址和 SMTP 服务器身份在入队时固定，更改设置不偷偷改掉旧队列的目的地或发送通道。
 
@@ -60,6 +61,12 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 - 短信权限是受限权限，安装器需允许，用户仍需授权。ADB 自用安装可使用 `adb install -r -g APK路径`；这不证明三星文件安装器的实际行为，权限不能授予时先检查安装方式。
 - 本版目标 Android 15；不承诺 Android 16.1 的验证码敏感权限兼容。彩信、RCS、微信等 App 通知不在本版范围。
 - 邮件正文进入选择的邮箱；TLS 与本地加密不等于端到端加密。
+
+## 应用内更新
+
+开发中的 0.2.2 增加首页「检查更新」：从 [GitHub Releases](https://github.com/soBigRice/sms-ferry/releases) 获取新版本，支持预览版；下载后校验安装包，再由 Android 确认安装。首次需手动安装含此入口的 APK，之后可在应用内升级。必须沿用相同包名与签名；覆盖安装保留邮箱配置和记录。更新失败不改变转发设置。
+
+更新契约、签名要求与后续发版步骤见 [GitHub 应用更新](docs/updates.md)。公开下载链接继续指向已发布版本，未发布的本地包不冒充 Release。
 
 ## 本地开发
 

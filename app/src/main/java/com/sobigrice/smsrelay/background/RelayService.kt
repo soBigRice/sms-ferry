@@ -10,6 +10,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.provider.Telephony
 import androidx.core.content.ContextCompat
+import com.sobigrice.smsrelay.AppLanguage
 import com.sobigrice.smsrelay.MainActivity
 import com.sobigrice.smsrelay.R
 import com.sobigrice.smsrelay.data.QueueDatabase
@@ -54,7 +55,7 @@ class RelayService : Service() {
         }
         if (!relay.config.enabled) { stopSelf(); return START_NOT_STICKY }
         val manager = getSystemService(NotificationManager::class.java)
-        manager.createNotificationChannel(NotificationChannel(CHANNEL, "信渡转发状态", NotificationManager.IMPORTANCE_LOW))
+        manager.createNotificationChannel(NotificationChannel(CHANNEL, AppLanguage.wrap(this).getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW))
         if (Build.VERSION.SDK_INT >= 34) startForeground(NOTIFICATION, notification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_REMOTE_MESSAGING)
         else startForeground(NOTIFICATION, notification())
         running = true
@@ -75,20 +76,27 @@ class RelayService : Service() {
         relay.queue.publish()
         return START_STICKY
     }
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (running) getSystemService(NotificationManager::class.java).notify(NOTIFICATION, notification())
+    }
     private fun notification(): Notification {
+        val localized = AppLanguage.wrap(this)
+        val manager = getSystemService(NotificationManager::class.java)
+        manager.createNotificationChannel(NotificationChannel(CHANNEL, localized.getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW))
         val counts = relay.queue.counts()
         val pending = (counts[JobState.PENDING] ?: 0) + (counts[JobState.SENDING] ?: 0)
         val problems = (counts[JobState.BLOCKED] ?: 0) + (counts[JobState.UNCERTAIN] ?: 0)
-        val content = if (relay.config.mailFault != null) "邮箱配置需要处理，点击查看"
-            else "待发送 $pending 条 · 需处理 $problems 条"
+        val content = if (relay.config.mailFault != null) localized.getString(R.string.notification_fault)
+            else localized.getString(R.string.notification_counts, pending, problems)
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val pause = PendingIntent.getService(this, 1, Intent(this, RelayService::class.java).setAction(PAUSE),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_relay)
-            .setContentTitle("信渡 · 短信转发已开启").setContentText(content).setContentIntent(open)
+            .setContentTitle(localized.getString(R.string.notification_title)).setContentText(content).setContentIntent(open)
             .setOngoing(true).setOnlyAlertOnce(true)
-            .addAction(Notification.Action.Builder(null, "暂停转发", pause).build()).build()
+            .addAction(Notification.Action.Builder(null, localized.getString(R.string.pause_forwarding), pause).build()).build()
     }
     override fun onDestroy() {
         running = false

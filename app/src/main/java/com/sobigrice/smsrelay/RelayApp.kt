@@ -11,6 +11,7 @@ class RelayApp : Application() {
         private set
     override fun onCreate() {
         super.onCreate()
+        AppLanguage.migrateToSystem(this)
         graph = RelayGraph(this)
         // Runs once for each new process, before any Worker can claim a message.
         graph.queue.recoverInterrupted()

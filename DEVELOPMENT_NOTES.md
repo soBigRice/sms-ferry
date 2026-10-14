@@ -1,5 +1,9 @@
 # 相关工程记录
 
+## GitHub 预览更新与安装缓存（2026-10-14 / 0.2.2）
+
+本仓库当前公开包是 prerelease，GitHub 的 latest 接口会排除它；更新应核对实际 Releases 列表、资产名、digest 与安装包身份，不能只比较字符串版本或依赖网站的最新下载 URL。不同机器默认生成的 Debug key 不相同，后续发布须延续已安装包签名。新增页复核时发现缓存文件被系统清理后，仅报错仍会保留安装状态；现在清除下载文件状态、保留已查到的 Release，恢复直接重新下载。下次覆盖升级验证分别核对 GitHub 响应、完整文件 / 摘要 / APK 身份、来源授权、系统安装后的 versionCode 和数据保留；模拟器完成不代表 S21 验收。约束与来源见 [更新说明](docs/updates.md)，回归入口见 PROJECT_MAP。
+
 本文引用的 `deliverables/verification.md` 为本地设备验收记录，不随源码仓库发布；公开的验证入口与适用范围见 [README](README.md) 和 [PROJECT_MAP](PROJECT_MAP.md)。
 
 ## SMTP 结果不明 / 重复发送（2026-10-13）
@@ -48,7 +52,7 @@ S21 / Android 15 / 0.1.3 真机重启首次解锁后，初查 RelayService 未�
 
 开放服务器时同时检查持久队列与凭据复用：仅比较发件地址不足以识别服务器变更。每条消息绑定主机、端口、TLS 方式及登录用户名；未知版本保留原数据，旧 payload 固定原 QQ 通道。密码不套用 QQ 去空白规则；服务器或身份改变后不得自动沿用旧密码。回归入口为 `QueueRunnerTest`、`ConfigMigrationTest`、`QueueDatabaseTest` 与 `MailSettingsUiTest`，本地 TLS / STARTTLS 服务器验证证书校验与升级前不发送凭据。
 
-Compose 测试经验：首次长表单的后续 LazyColumn item 可能尚未组合，`onNodeWithTag(...).performScrollTo()` 找不到它不等于产品控件不存在。本轮首次设置测试因此失败，其他 26 个原生场景通过；改为在带标签的懒列表上 `performScrollToNode`，不增加等待或改动产品布局掩盖夹具问题。View → ComponentActivity 同步使用 Activity Result 权限 API，保留开始意图与原扫描游标。最终实际结果见本地 `deliverables/verification-material-smtp-0.2.0.md`；未把模拟器和本地 SMTP 测试当成真实邮箱投递或用户视觉验收。
+Compose 测试经验：首次长表单的后续 LazyColumn item 可能尚未组合，`onNodeWithTag(...).performScrollTo()` 找不到它不等于产品控件不存在。本轮首次设置测试因此失败，其他 26 个原生场景通过；改为在带标签的懒列表上 `performScrollToNode`，不增加等待或改动产品布局掩盖夹具问题。 0.2.2 中英文接入时，英文长文案使编辑页的后续 `testButton` 也移出已组合范围；`draftCannotSendOrSaveUntilExplicitSave` 同样先在 `settingsList` 上滚动到节点，再操作按钮；`LanguageUiTest` 的错误提示作为后续独立 item，断言之前也先滚动定位，并在回到取消按钮前重新定位。下次扩展语言 / 字号时核对所有跨 item 的测试定位，不能只修首次设置分支。View → ComponentActivity 同步使用 Activity Result 权限 API，保留开始意图与原扫描游标。最终实际结果见本地 `deliverables/verification-material-smtp-0.2.0.md`；未把模拟器和本地 SMTP 测试当成真实邮箱投递或用户视觉验收。
 
 
 ## 自适应图标资源迁移与原生测试夹具（2026-10-14 / 0.2.1）

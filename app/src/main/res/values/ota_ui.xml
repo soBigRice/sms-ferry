@@ -1,0 +1,27 @@
+<resources>
+    <string name="ota_check">Check updates</string>
+    <string name="ota_title">App updates</string>
+    <string name="ota_current_version">Current version %1$s</string>
+    <string name="ota_checking">Checking for updates</string>
+    <string name="ota_downloading">Downloading %1$d%%</string>
+    <string name="ota_ready">Ready to install</string>
+    <string name="ota_available">New version %1$s available</string>
+    <string name="ota_check_failed">Cannot check updates right now</string>
+    <string name="ota_latest">You are up to date</string>
+    <string name="ota_preview">Preview</string>
+    <string name="ota_cancel">Cancel download</string>
+    <string name="ota_install">Install update</string>
+    <string name="ota_download">Download update</string>
+    <string name="ota_recheck">Check again</string>
+    <string name="ota_description">Updates come from GitHub Releases, including preview builds. The downloaded package is verified before Android asks you to confirm installation. Updating keeps your email settings and forwarding records.</string>
+    <string name="ota_releases">View releases on GitHub</string>
+    <string name="ota_permission_denied">SMS Ferry is not allowed to install updates yet. Tap Install again, or download and install the APK from GitHub.</string>
+    <string name="ota_file_missing">Android has cleared the downloaded package. Please download it again.</string>
+    <string name="ota_settings_missing">Installation source settings are unavailable. Please download and install the APK from GitHub.</string>
+    <string name="ota_installer_missing">No system installer is available. Please download and install the APK from GitHub.</string>
+    <string name="ota_install_restricted">Android restricted installation. Please check the installation source settings.</string>
+    <string name="ota_browser_missing">No browser is available. Open the sms-ferry Releases page on GitHub in a browser.</string>
+    <string name="ota_check_error">Update check failed. Please try again later.</string>
+    <string name="ota_download_error">Download failed. Please try again later.</string>
+    <string name="ota_cancelled">Download cancelled.</string>
+</resources>

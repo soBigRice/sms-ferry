@@ -2,7 +2,7 @@
 
 核对日期：2026-10-14。安卓个人自用接收端，目标三星 S21 / One UI 7。授权范围与行为约定见 [邮件第一版设计](docs/email-design.md)，安装与验收见 [README](README.md)。
 
-应用显示名为“信渡”，Gradle 项目名为 `SmsFerry`；包名 / applicationId 保持 `com.sobigrice.smsrelay`，兼容原有安装及加密配置。邮件标题前缀与发件人显示名同步为“信渡”。`deliverables/` 是不随源码发布的本地验收记录。
+应用中文显示名为“信渡”，英文显示名为 `SMS Ferry`，Gradle 项目名为 `SmsFerry`；包名 / applicationId 保持 `com.sobigrice.smsrelay`，兼容原有安装及加密配置。原有邮件标题前缀与发件人显示名仍为“信渡”。`deliverables/` 是不随源码发布的本地验收记录。
 
 官网为 `site/` 纯静态页，GitHub Pages 工作流只上传该目录，APK 放在 Releases；发布与维护入口见 [官网说明](docs/website.md)。
 
@@ -11,6 +11,9 @@
 | 文件 / 符号 | 职责 |
 |---|---|
 | `MainActivity` / `ui.HomeScreen` | Material 3 运行页；脱敏邮箱摘要、开始/暂停、Activity Result 权限检查、记录核对 |
+| `AppLanguage` / `res/values*/strings.xml` / `xml/locale_config.xml` | 系统 / 中文 / 英文；Android 13+ 原生应用语言，旧系统独立偏好与 Context；安全错误码在显示边界翻译 |
+| `UpdateActivity` / `UpdateModel` / `ui.UpdateScreen` | 独立更新页、协程生命周期、下载进度、安装来源授权与系统安装器；不写转发状态 |
+| `update.GitHubUpdater` / `update.UpdatePolicy` | 公共 GitHub Releases（含预览版）、数字版本比较、HTTPS 下载、长度 / SHA-256 / APK 身份校验；见 [更新说明](docs/updates.md) |
 | `MailSettingsActivity` / `ui.MailSettingsScreen` | Material 3 独立设置；只读 / 编辑、通用 SMTP 参数、显式保存、凭据身份约束、已保存配置测试 |
 | `ui.FerryMotion` / `res/anim` / `mipmap-anydpi/ic_launcher.xml` | 用户选定 A「信舟」自适应图标、单色主题图标与事件驱动动效，详见 [界面与动效](docs/ui-design.md) |
 | `Readiness` / `Context.readiness` | 短信双权限、通知权限/总开关/频道、电池优化豁免、系统后台限制；区分必需权限与建议 |
@@ -73,6 +76,14 @@ SMS_RECEIVED / 收件箱变化 / 周期恢复 / 手动补查
 
 首页只展示最近 5 条，更多入口仍保留原来的最近 20 条；点击记录显示完整时间、尝试次数与安全错误码。问题处理继续使用原有 `showProblems`，队列记录、目的地、去重和结果不明处理不变。界面统一使用 Compose Material 3 组件，主题集中于 `ui/SmsFerryTheme.kt`，组件 / 状态 / 事件在 `ui/RelayScreens.kt`；跟随系统深浅色及 Android 12+ 动态配色。原 XML 页面与手绘按钮 / 输入框已移除，原生 window theme 只负责启动过渡。
 
+## 中英文界面
+
+`MainActivity.showLanguagePicker`（首页底部 Language / 语言）→ `AppLanguage.select`：Android 13+ 写入 `LocaleManager.applicationLocales`，系统“应用语言”与 App 内选择共用同一来源；Android 8–12 只在独立 `app_language` 偏好保存 `zh` / `en` / 空串。空串表示跟随系统；没有对应翻译的系统语言回退英文。Android 13 升级后，旧系统偏好在 `RelayApp.onCreate` 一次迁入系统，再移除旧键，避免覆盖后续系统选择。
+
+旧系统 Activity 在 `attachBaseContext` 应用 `AppLanguage.wrap`，选择后重建；Android 13+ 由系统重建。语言入口在首页，邮箱编辑中的草稿不会因主动切换丢失。Compose 固定文案通过 `stringResource`，Activity 的状态 / 对话框 / Toast 通过资源解析；`MailFailure` 与 `MailValidationException.reason` 保持语言无关枚举，校验规则和持久化格式不变。运行通知及频道名称每次重新解析当前语言，后台服务收到配置变化也刷新通知。更新页资源与错误映射见 [更新说明](docs/updates.md)。
+
+切换不写邮箱配置、开启状态、扫描基线或队列记录；原短信与既有邮件内容不翻译。测试入口 `LanguageUiTest` 覆盖中英 / 跟随系统、Activity 重建及配置密文 / 记录 / 游标保留、英文编辑校验、全部邮件错误与通知和数量文案；只在隔离模拟器使用假账号与 AUTH 阻塞运行。双语官网的独立静态页、选择优先级和回退见 [官网说明](docs/website.md)。来源：[Android 原生应用语言](https://developer.android.com/guide/topics/resources/app-languages)，2026-10-14 核查；沿用现有 ComponentActivity，不新增 AppCompat 依赖。
+
 ## 邮件状态
 
 ```mermaid
@@ -106,7 +117,9 @@ stateDiagram-v2
 - `MailSettingsUiTest`：默认只读、首次直接编辑、取消/返回丢弃草稿、编辑中禁止测试、显式保存，以及开始转发不重写账号/清除故障；Compose 节点操作覆盖切换服务器不得沿用密码、自定义 SMTP 保存。只在隔离模拟器执行。
 - `ReadinessTest`：短信双权限、通知权限/总开关/频道、后台限制与电池豁免组合，建议项计数；通知缺失不阻断短信接收。
 
-当前 0.2.1：A「信舟」图标和事件动效已实现；30 项单元测试、隔离 Android 16 模拟器 28 项原生测试通过，关闭系统动画后额外 8 项界面测试通过。已查看模拟器圆形桌面图标、浅色 / 深色运行页、配置只读 / 编辑状态。S21 已从 0.2.0 保留数据覆盖升级，配置密文、开启状态、扫描游标与原有 9 条记录核对保留，短信 / 通知权限不变，进程及前台服务运行。用户真机视觉与交互验收仍待确认；安装核对结果见本地 `deliverables/install-s21-0.2.1.json`。
+本地 0.2.2 / versionCode 7：新增 GitHub 更新与并行中英文支持。最终 APK 的 38 项单元测试、Lint（0 error）、构建通过；隔离 Android 16 的更新 JSON / 签名元数据 / Provider 范围 / UI 共 9 项原生测试通过。仅在独立临时源码副本降低版本标记为 0.2.0 / code 5，实际检查、下载公共 v0.2.1 预览 APK，经过全部身份校验、来源授权与系统确认后覆盖安装为 code 6，未改公共 Release 或共享版本配置。已查看实际英文更新页与系统确认界面。正式 0.2.2 APK 与已发布 0.2.1 签名证书一致；尚未公开发布、未安装 S21、未获本轮真机用户验收。APK 与记录见本地 `deliverables/sms-ferry-0.2.2-debug.apk` / `ota-0.2.2-verification.json`；语言验证：Android 16 的 3 项语言测试与 8 项已有界面回归通过，Android 9 的同一组合 11 项通过；覆盖中英 / 系统选择、重建后的配置密文 / 队列 / 游标保留、英文编辑校验、通知 / 错误 / 数量文案。184 项双语资源键与格式占位符核对一致。已查看英文首页 / 设置及官网桌面中英、手机英文实际渲染，官网 320–1280 宽度及语言切换 / 静态回退通过；本轮仍待用户主观验收。语言证据见本地 `deliverables/i18n-0.2.2-verification.json`，更新支持的使用与发版契约见 [更新说明](docs/updates.md)。
+
+0.2.1 历史：A「信舟」图标和事件动效已实现；30 项单元测试、隔离 Android 16 模拟器 28 项原生测试通过，关闭系统动画后额外 8 项界面测试通过。已查看模拟器圆形桌面图标、浅色 / 深色运行页、配置只读 / 编辑状态。S21 已从 0.2.0 保留数据覆盖升级，配置密文、开启状态、扫描游标与原有 9 条记录核对保留，短信 / 通知权限不变，进程及前台服务运行。用户真机视觉与交互验收仍待确认；安装核对结果见本地 `deliverables/install-s21-0.2.1.json`。
 
 0.2.0 历史：30 项单元测试和隔离 Android 16 / API 36 模拟器 27 项原生测试通过；已查看浅色、深色、1.3 倍字号与横屏。此包在 S21 从 0.1.3 保留数据覆盖升级，配置密文、转发开启状态和 9 条历史记录核对一致。以上不能替代当前版本用户验收。
 

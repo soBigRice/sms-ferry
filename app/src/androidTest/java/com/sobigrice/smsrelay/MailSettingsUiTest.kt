@@ -65,6 +65,7 @@ class MailSettingsUiTest {
         val before = graph.queue.counts()
         compose.onNodeWithTag("editButton").performScrollTo().performClick()
         compose.onNodeWithTag("recipientInput").performScrollTo().performTextReplacement("10003@qq.com")
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("testButton"))
         compose.onNodeWithTag("testButton").performScrollTo().assertIsNotEnabled()
         assertEquals(saved, graph.config.account())
         assertEquals(before, graph.queue.counts())
@@ -88,7 +89,7 @@ class MailSettingsUiTest {
         compose.onNodeWithTag("hostInput").performScrollTo().performTextReplacement("smtp.example.org")
         compose.onNodeWithTag("saveButton").performScrollTo().performClick()
         assertEquals(saved, graph.config.account())
-        compose.onNodeWithText("服务器或登录身份已变化，请重新输入 SMTP 密码或授权码").assertExists()
+        compose.onNodeWithText(AppLanguage.wrap(context).getString(R.string.credential_changed)).assertExists()
     }
     @Test fun customSmtpProfileIsSavedWithIndependentLogin() {
         launch(MailSettingsActivity::class.java)

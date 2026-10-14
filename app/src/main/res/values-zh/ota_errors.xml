@@ -1,0 +1,24 @@
+<resources>
+    <string name="ota_error_current_version">当前应用版本格式不受支持，无法安全检查更新。</string>
+    <string name="ota_error_invalid_version">GitHub 发布版本格式无效。</string>
+    <string name="ota_error_invalid_metadata">GitHub 更新信息格式无效，请稍后重试。</string>
+    <string name="ota_error_missing_digest">更新文件缺少有效的 GitHub SHA-256 校验值，请重新上传发布文件。</string>
+    <string name="ota_error_not_newer">更新版本必须高于当前版本。</string>
+    <string name="ota_error_channel">更新文件与当前安装渠道不一致。</string>
+    <string name="ota_error_max_size">更新信息或文件大小无效，APK 最大支持 100 MB。</string>
+    <string name="ota_error_invalid_url">GitHub 更新下载地址无效。</string>
+    <string name="ota_error_redirect">GitHub 更新下载重定向地址无效。</string>
+    <string name="ota_error_incomplete">更新文件不完整，请重新下载。</string>
+    <string name="ota_error_checksum">更新文件校验失败，请重新下载。</string>
+    <string name="ota_error_package">更新文件不是当前应用，已拒绝安装。</string>
+    <string name="ota_error_version_code">更新文件的版本号未递增，已拒绝安装。</string>
+    <string name="ota_error_version_name">更新文件版本与发布版本不一致，已拒绝安装。</string>
+    <string name="ota_error_signature">更新文件签名与当前应用不一致，已拒绝安装。</string>
+    <string name="ota_error_storage">无法保存更新文件，请检查存储空间后重试。</string>
+    <string name="ota_error_invalid_apk">更新文件不是有效的 Android 安装包，已拒绝安装。</string>
+    <string name="ota_error_rate_limit">GitHub 请求受限，请稍后再试。</string>
+    <string name="ota_error_not_found">GitHub 发布或更新文件暂不可用，请稍后再试。</string>
+    <string name="ota_error_service">GitHub 更新服务暂不可用，请稍后再试。</string>
+    <string name="ota_error_timeout">GitHub 更新请求超时，请稍后重试。</string>
+    <string name="ota_error_network">无法连接 GitHub 更新服务，请检查网络后重试。</string>
+</resources>
