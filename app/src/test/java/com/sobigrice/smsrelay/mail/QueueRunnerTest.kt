@@ -4,7 +4,7 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class QueueRunnerTest {
-    private val account = MailAccount.create("10001@qq.com", "abcdefghijklmnop", "10002@qq.com")
+    private val account = MailAccount.legacyQq("10001@qq.com", "abcdefghijklmnop", "10002@qq.com")
     private fun job(sourceId: Long = 1, recipient: String = account.recipient, kind: JobKind = JobKind.SMS) =
         MailJob(sourceId = sourceId, sourceSender = "106123", body = "验证码 123456", receivedAt = 123,
             accountAddress = account.sender, recipientAddress = recipient, kind = kind)
@@ -68,6 +68,27 @@ class QueueRunnerTest {
         QueueRunner(queue) { _, _ -> fail("must not send"); SendResult.Accepted }.run(other, { true })
         assertEquals(JobState.BLOCKED, queue.states[j.id])
         assertEquals(MailFailure.ACCOUNT_CHANGED, queue.failures[j.id])
+    }
+
+    @Test fun changedServerOrLoginCannotUseExistingQueuedMessages() {
+        for (other in listOf(account.copy(smtpHost = "smtp.example.org"), account.copy(smtpPort = 587),
+            account.copy(security = MailSecurity.STARTTLS), account.copy(username = "different-login"))) {
+            val j = job(); val queue = FakeQueue(listOf(j))
+            QueueRunner(queue) { _, _ -> fail("must not send via another SMTP identity"); SendResult.Accepted }
+                .run(other, { true })
+            assertEquals(JobState.BLOCKED, queue.states[j.id])
+            assertEquals(MailFailure.ACCOUNT_CHANGED, queue.failures[j.id])
+        }
+    }
+
+    @Test fun genericProfileKeepsItsOriginalRecipientWhenSettingsChange() {
+        val generic = MailAccount.create("a@example.org", "password", "b@example.org", "smtp.example.org", 587, MailSecurity.STARTTLS)
+        val j = job(recipient = generic.recipient).copy(accountAddress = generic.sender, smtpIdentity = generic.identity)
+        val queue = FakeQueue(listOf(j)); var deliveredTo = ""
+        QueueRunner(queue) { record, _ -> deliveredTo = record.recipientAddress; SendResult.Accepted }
+            .run(generic.copy(recipient = "new@example.org"), { true })
+        assertEquals("b@example.org", deliveredTo)
+        assertEquals(JobState.ACCEPTED, queue.states[j.id])
     }
 
     @Test fun pauseKeepsSmsButAllowsExplicitTestEmail() {

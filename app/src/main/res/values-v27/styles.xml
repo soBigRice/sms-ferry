@@ -1,5 +1,0 @@
-<resources>
-    <style name="Theme.SmsRelay" parent="Theme.SmsRelay.Base">
-        <item name="android:windowLightNavigationBar">true</item>
-    </style>
-</resources>

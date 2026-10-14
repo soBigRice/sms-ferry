@@ -11,6 +11,7 @@ import java.util.UUID
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import org.json.JSONObject
 
 @RunWith(AndroidJUnit4::class)
 class QueueDatabaseTest {
@@ -75,5 +76,31 @@ class QueueDatabaseTest {
         queue.finish(original.id, JobState.UNCERTAIN, MailFailure.UNKNOWN)
         queue.retry(original.id)
         assertEquals(original.recipientAddress, queue.claimNext(true)?.recipientAddress)
+    }
+
+    @Test fun genericServerBindingSurvivesDatabaseReopen() {
+        val account = MailAccount.create("alice@example.org", "queue-test-password", "reader@example.net",
+            "smtp.example.org", 2525, MailSecurity.STARTTLS, "smtp-user")
+        val original = job().copy(accountAddress = account.sender, recipientAddress = account.recipient, smtpIdentity = account.identity)
+        queue.enqueue(original); queue.close(); queue = QueueDatabase(context, crypto, name)
+        assertEquals(original, queue.job(original.id))
+        val payload = queue.readableDatabase.rawQuery("SELECT payload FROM jobs WHERE id=?", arrayOf(original.id)).use {
+            assertTrue(it.moveToFirst()); crypto.decrypt(it.getString(0))
+        }
+        assertFalse(payload.contains(account.authorizationCode))
+    }
+
+    @Test fun originalQueuePayloadWithoutServerBindingStaysOnQq() {
+        val original = job()
+        val payload = crypto.encrypt(JSONObject().put("id", original.id).put("sourceId", original.sourceId)
+            .put("sender", original.sourceSender).put("body", original.body).put("receivedAt", original.receivedAt)
+            .put("account", original.accountAddress).put("recipient", original.recipientAddress).put("kind", original.kind.name).toString())
+        queue.writableDatabase.execSQL("INSERT INTO jobs (id,source_id,kind,payload,state,created_at,updated_at) VALUES (?,?,?,?,?,?,?)",
+            arrayOf<Any?>(original.id, original.sourceId, original.kind.name, payload, "PENDING", 123L, 123L))
+        val restored = queue.job(original.id)!!
+        val legacy = MailAccount.legacyQq(original.accountAddress, "abcdefghijklmnop", original.recipientAddress)
+        assertTrue(restored.belongsTo(legacy))
+        assertFalse(restored.belongsTo(legacy.copy(smtpHost = "smtp.example.org")))
+        assertEquals(original.recipientAddress, restored.recipientAddress)
     }
 }

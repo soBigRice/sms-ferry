@@ -14,18 +14,21 @@ import java.util.Locale
 import java.util.Properties
 import javax.net.ssl.SSLException
 
-internal data class MailEndpoint(val host: String = "smtp.qq.com", val port: Int = 465)
+internal data class MailEndpoint(val host: String, val port: Int)
 
-class QqMailSender internal constructor(
-    private val endpoint: MailEndpoint = MailEndpoint(),
+class SmtpMailSender internal constructor(
+    private val endpointOverride: MailEndpoint? = null,
     // Test-only injected TLS factory; the application always uses the system trust store.
     private val sessionSetup: (Properties) -> Unit = {},
 ) : MailSender {
-    internal fun properties() = Properties().apply {
+    internal fun properties(account: MailAccount) = Properties().apply {
+        val endpoint = endpointOverride ?: MailEndpoint(account.smtpHost, account.smtpPort)
         setProperty("mail.smtp.host", endpoint.host)
         setProperty("mail.smtp.port", endpoint.port.toString())
         setProperty("mail.smtp.auth", "true")
-        setProperty("mail.smtp.ssl.enable", "true")
+        setProperty("mail.smtp.ssl.enable", (account.security == MailSecurity.TLS).toString())
+        setProperty("mail.smtp.starttls.enable", (account.security == MailSecurity.STARTTLS).toString())
+        setProperty("mail.smtp.starttls.required", (account.security == MailSecurity.STARTTLS).toString())
         setProperty("mail.smtp.ssl.checkserveridentity", "true")
         setProperty("mail.smtp.ssl.protocols", "TLSv1.3 TLSv1.2")
         setProperty("mail.smtp.connectiontimeout", "15000")
@@ -58,12 +61,13 @@ class QqMailSender internal constructor(
     }
 
     override fun send(job: MailJob, account: MailAccount): SendResult {
-        val session = Session.getInstance(properties())
+        val endpoint = endpointOverride ?: MailEndpoint(account.smtpHost, account.smtpPort)
+        val session = Session.getInstance(properties(account))
         val mail = try { message(session, job) }
         catch (_: MessagingException) { return SendResult.Rejected(MailFailure.CONFIG) }
         val transport = session.getTransport("smtp")
         try {
-            try { transport.connect(endpoint.host, endpoint.port, account.sender, account.authorizationCode) }
+            try { transport.connect(endpoint.host, endpoint.port, account.username, account.authorizationCode) }
             catch (e: Exception) { return classifyConnectionFailure(e) }
             return try {
                 transport.sendMessage(mail, mail.allRecipients)
@@ -89,7 +93,8 @@ class QqMailSender internal constructor(
         val chain = causes(e)
         return when {
             chain.any { it is AuthenticationFailedException } -> SendResult.Rejected(MailFailure.AUTH)
-            chain.any { it is SSLException || it is java.security.cert.CertificateException } -> SendResult.Rejected(MailFailure.TLS)
+            chain.any { it is SSLException || it is java.security.cert.CertificateException ||
+                (it is MessagingException && it.message?.contains("STARTTLS is required") == true) } -> SendResult.Rejected(MailFailure.TLS)
             else -> SendResult.Retry(MailFailure.NETWORK)
         }
     }

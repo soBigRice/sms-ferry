@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-feature android:name="android.hardware.telephony" android:required="true" />
     <application android:name=".RelayApp" android:label="@string/app_name"
-        android:icon="@drawable/ic_launcher" android:roundIcon="@drawable/ic_launcher"
+        android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher"
         android:theme="@style/Theme.SmsRelay" android:allowBackup="false"
         android:fullBackupContent="false" android:dataExtractionRules="@xml/data_extraction_rules"
         android:usesCleartextTraffic="false" android:supportsRtl="true">

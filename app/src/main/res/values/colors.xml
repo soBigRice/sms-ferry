@@ -1,11 +1,5 @@
 <resources>
     <color name="page_background">#F6F8F5</color>
-    <color name="white">#FFFFFF</color>
     <color name="primary">#245B4C</color>
-    <color name="text_primary">#1B3029</color>
-    <color name="text_secondary">#627269</color>
-    <color name="text_disabled">#A8B2AA</color>
-    <color name="warning">#A34B16</color>
-    <color name="divider">#E3E9E3</color>
-    <color name="ripple">#1A245B4C</color>
+    <color name="icon_background">#176B4C</color>
 </resources>

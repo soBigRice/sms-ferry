@@ -20,7 +20,7 @@ class QueueRunner(private val queue: MailQueue, private val sender: MailSender) 
                 queue.finish(job.id, JobState.PENDING)
                 return RunOutcome.IDLE
             }
-            if (!job.accountAddress.equals(account.sender, ignoreCase = true)) {
+            if (!job.belongsTo(account)) {
                 blockingFailure = MailFailure.ACCOUNT_CHANGED
                 queue.finish(job.id, JobState.BLOCKED, MailFailure.ACCOUNT_CHANGED)
                 return RunOutcome.BLOCKED

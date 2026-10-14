@@ -24,7 +24,7 @@ class QueueSchedulerTest {
 
     @Before fun prepare() {
         work.cancelAllWork().result.get(5, TimeUnit.SECONDS)
-        graph.config.save(MailAccount.create("10001@qq.com", "abcdefghijklmnop", "10002@qq.com"))
+        graph.config.save(MailAccount.legacyQq("10001@qq.com", "abcdefghijklmnop", "10002@qq.com"))
         graph.config.mailFault = MailFailure.AUTH
         graph.queue.setScanBaseline(graph.inbox.latestId())
         graph.config.enabled = true

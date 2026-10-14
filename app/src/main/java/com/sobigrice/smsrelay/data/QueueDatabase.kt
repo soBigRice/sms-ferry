@@ -124,12 +124,16 @@ class QueueDatabase(private val context: Context, private val crypto: CryptoStor
         put("id", job.id); put("sourceId", job.sourceId ?: JSONObject.NULL)
         put("sender", job.sourceSender); put("body", job.body); put("receivedAt", job.receivedAt)
         put("account", job.accountAddress); put("recipient", job.recipientAddress); put("kind", job.kind.name)
+        put("smtp", job.deliveryIdentity().let { JSONObject().put("host", it.host).put("port", it.port)
+            .put("security", it.security.name).put("username", it.username) })
     }.toString())
     private fun decode(payload: String): MailJob {
         val j = JSONObject(crypto.decrypt(payload))
         return MailJob(j.getString("id"), if (j.isNull("sourceId")) null else j.getLong("sourceId"),
             j.getString("sender"), j.getString("body"), j.getLong("receivedAt"),
-            j.getString("account"), j.getString("recipient"), JobKind.valueOf(j.getString("kind")))
+            j.getString("account"), j.getString("recipient"), JobKind.valueOf(j.getString("kind")),
+            j.optJSONObject("smtp")?.let { SmtpIdentity(it.getString("host"), it.getInt("port"),
+                MailSecurity.valueOf(it.getString("security")), it.getString("username")) })
     }
 }
 

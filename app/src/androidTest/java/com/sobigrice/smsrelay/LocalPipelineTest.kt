@@ -18,7 +18,7 @@ class LocalPipelineTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val context = instrumentation.targetContext
         val graph = context.relay
-        graph.config.save(MailAccount.create("10001@qq.com", "abcdefghijklmnop", "10002@qq.com"))
+        graph.config.save(MailAccount.legacyQq("10001@qq.com", "abcdefghijklmnop", "10002@qq.com"))
         graph.config.mailFault = MailFailure.AUTH
         graph.queue.setScanBaseline(0)
         graph.config.enabled = true

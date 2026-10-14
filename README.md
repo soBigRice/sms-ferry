@@ -2,7 +2,7 @@
 
 **把短信，渡到你身边。**
 
-轻量 Android 短信转发工具，通过 QQ 邮箱将手机收到的新短信发送到指定邮箱，无需中转服务器。适合备用安卓手机接收短信、在 iPhone 或另一台设备的邮箱查看的场景。
+轻量 Android 短信转发工具，通过可配置的 SMTP 服务将手机收到的新短信发送到指定邮箱，无需中转服务器。适合备用安卓手机接收短信、在 iPhone 或另一台设备的邮箱查看的场景。
 
 A lightweight Android app that forwards SMS to email, without a relay server.
 
@@ -12,7 +12,7 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 
 开启转发后，新收到的普通短信会连同来源号码、接收时间和完整正文发送到你设置的邮箱，验证码也不会自动隐藏。仅在本人或明确授权的设备、邮箱上使用，不得用于秘密监控、窃取验证码或盗用账号。
 
-授权码与排队短信在手机本地加密保存，邮件直连 QQ SMTP，无作者运营的中转服务器。但这**不是端到端加密**：邮箱服务商、已登录邮箱的设备及通知预览都可能接触邮件内容。请保护发送与接收邮箱，不公开短信、验证码或授权码。
+授权码与排队短信在手机本地加密保存，邮件直连用户配置的 SMTP 服务器，无作者运营的中转服务器。但这**不是端到端加密**：邮箱服务商、已登录邮箱的设备及通知预览都可能接触邮件内容。请保护发送与接收邮箱，不公开短信、验证码或授权码。
 
 完整数据说明、风险边界和安全问题反馈方式见 [安全与隐私声明（SECURITY.md）](SECURITY.md)。
 
@@ -25,14 +25,16 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 ## 安装与首次设置
 
 1. 按下方“本地开发”构建，将 `app/build/outputs/apk/debug/app-debug.apk` 传到手机并安装。当前仓库提供源码，未上架，也未发布正式签名 APK。
-2. 电脑登录 [QQ 邮箱](https://mail.qq.com/)，右上角头像 → **设置 → 账号与安全 → 安全设置**，开启第三方 POP3/IMAP/SMTP 服务并生成授权码。路径核查于 2026-10-13；参见 [QQ 官方教程](https://help.mail.qq.com/detail/106/985)。
-3. 在三星 App 首页进入 **邮箱设置**（首次直接填表，已有配置点 **编辑配置**），填写 **发送邮箱、16 位授权码、接收邮箱**，再点击 **保存设置**。默认只读，取消或返回会丢弃草稿。发送和接收可以使用同一个 QQ 邮箱。授权码只在手机输入，不发到聊天、不写入源文件。
+2. 在发件邮箱服务商处开启 SMTP，并按其要求取得授权码 / 应用专用密码，或准备允许使用的 SMTP 密码。接收邮箱无需开启 POP3 / IMAP。
+3. 在 App 进入 **邮箱设置**，填写 **SMTP 服务器、端口、SSL/TLS 或 STARTTLS、发送邮箱、SMTP 登录用户名、密码 / 授权码、接收邮箱**，点击 **保存设置**。QQ / 163 预设仅帮助填值，参数均可修改。已有配置默认只读，编辑后取消或返回会丢弃草稿；发送和接收可使用同一邮箱。凭据仅在手机输入，不发到聊天、不写入源文件。
 4. 点击 **发送测试邮件**，到接收邮箱确认找到标题 `[信渡] 邮箱连接测试` 的邮件。
 5. 点击 **开始转发 / 授权并开始转发**，在系统对话框允许短信读取、接收；允许后自动开始。运行通知建议开启，拒绝通知仍能转发短信。再向三星那张卡发一条真实短信。
 6. 首页 **运行检查** 自动显示短信、运行通知、系统后台与电池优化状态。缺失项点旁边的按钮进入对应设置，返回 App 会重新检查。三星从不休眠名单无法由这组公开 API 判断，可在 **后台运行说明 → 三星后台设置** 中确认加入本应用。
 7. iPhone 登录接收邮箱，允许其通知。邮件通知的速度取决于实际投递、邮箱 App 和系统通知设置。
 
-SMTP 固定 `smtp.qq.com:465`，TLS 加密且校验证书与主机名。默认 QQ 登录密码不能代替授权码；修改 QQ 密码可能使授权码过期。发送账号可使用 QQ 邮箱 / Foxmail 别名，接收地址可以是其他邮箱。
+支持任意符合上述配置与认证方式的 SMTP 服务。SSL/TLS 通常使用 465，STARTTLS 通常使用 587，也允许自定义端口；连接必须加密并校验证书与主机名。登录用户名可以与发送邮箱不同。服务商是否允许密码或应用专用密码认证需要按账号规则确认；需要 OAuth 登录的服务暂不支持。
+
+原 QQ 配置会自动兼容读取。修改服务器或登录身份时必须重新输入凭据；同一身份下留空可以沿用已保存凭据。旧队列仍绑定原发件地址、收件地址和服务器，不会因修改配置偷偷改变发送通道。
 
 ## 已实现的行为
 
@@ -42,13 +44,13 @@ SMTP 固定 `smtp.qq.com:465`，TLS 加密且校验证书与主机名。默认 Q
 - 本地待发送队列，断网等待，网络恢复后调度发信；连接失败退避。没有累计运行时间截止。
 - 授权码与排队短信加密保存，禁止备份这些私有数据；已发送本地记录 30 天后清理，未成功记录保留。
 - 前台通知、手动暂停、状态、问题记录核对和重试。
-- 首页紧凑状态卡、3 类运行检查与最近记录，更多入口保留记录详情。
+- Compose + Material 3 界面，跟随系统深浅色及 Android 12+ 动态配色；首页紧凑状态卡、3 类运行检查与最近记录，更多入口保留记录详情。
 - 首页只读邮箱摘要，配置移到独立设置页；测试邮件与开始转发使用已保存设置，不会悄悄保存输入。修改时测试按钮禁用，保存后才可测试。
-- 发送账号和接收地址在入队时固定，更改设置不偷偷改掉旧队列的目的地。
+- 发送账号、接收地址和 SMTP 服务器身份在入队时固定，更改设置不偷偷改掉旧队列的目的地或发送通道。
 
 ## 可靠性边界
 
-- “QQ 服务器已接收”不是 iPhone 已读，也不保证邮件最终投递或通知及时到达。
+- “服务器已接收”不是 iPhone 已读，也不保证邮件最终投递或通知及时到达。
 - SMTP 在 DATA 发送后掉线可能已投递。结果不明的记录不自动重发；先核对邮箱，再选择“已在邮箱找到”或明确重试，后者可能产生重复邮件。
 - 暂停不收集新短信，原待发送记录保留，恢复后继续发送。当前已经开始的一封邮件可能完成。
 - 定期补查间隔为 15 分钟，系统省电机制可能延后。即时转发与三星后台设置、网络、系统调度有关。
@@ -59,7 +61,7 @@ SMTP 固定 `smtp.qq.com:465`，TLS 加密且校验证书与主机名。默认 Q
 
 ## 本地开发
 
-JDK 17 / Android SDK 36 + Build Tools 36.0.0；Gradle Wrapper 9.3.1（官方 SHA-256 校验），AGP 9.1.0 内置 Kotlin。依赖与版本锁定在 Gradle 文件；没有下载或执行第三方仓库脚本。
+JDK 17 / Android SDK 36 + Build Tools 36.0.0；Gradle Wrapper 9.3.1（官方 SHA-256 校验），AGP 9.1.0 内置 Kotlin 2.2.10，Compose 编译插件同为 2.2.10；Compose BOM 2025.10.01 / activity-compose 1.11.0。依赖与版本锁定在 Gradle 文件；没有下载或执行第三方仓库脚本。
 
 可用 Android Studio 打开仓库并配置 SDK；命令行构建时确保 `JAVA_HOME` 指向 JDK 17，并通过 `ANDROID_HOME` 或本机 `local.properties` 配置 SDK 路径。`local.properties` 不提交。
 
@@ -73,7 +75,10 @@ JDK 17 / Android SDK 36 + Build Tools 36.0.0；Gradle Wrapper 9.3.1（官方 SHA
 adb -s emulator-5580 install -r -g app/build/outputs/apk/debug/app-debug.apk
 adb -s emulator-5580 emu sms send 106123 'SMS relay local test 123456'
 adb -s emulator-5580 emu sms send 106123 'SMS relay local test 123456'
-./gradlew --no-daemon :app:connectedDebugAndroidTest
+# 为避免误操作已连接的个人真机，先只构建测试 APK，再显式指定隔离模拟器运行。
+./gradlew --no-daemon :app:assembleDebugAndroidTest
+adb -s emulator-5580 install -r -g app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+adb -s emulator-5580 shell am instrument -w com.sobigrice.smsrelay.test/androidx.test.runner.AndroidJUnitRunner
 ```
 
 结构与状态流见 [PROJECT_MAP](PROJECT_MAP.md)，约定见 [设计](docs/email-design.md)。

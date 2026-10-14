@@ -21,7 +21,7 @@ class SmsInboxTest {
     private val name = "test-${UUID.randomUUID()}.db"
     private lateinit var queue: QueueDatabase
     private lateinit var inbox: SmsInbox
-    private val account = MailAccount.create("10001@qq.com", "abcdefghijklmnop", "10002@qq.com")
+    private val account = MailAccount.legacyQq("10001@qq.com", "abcdefghijklmnop", "10002@qq.com")
     @Before fun prepare() {
         queue = QueueDatabase(context, CryptoStore(alias), name)
         inbox = SmsInbox(context, queue)

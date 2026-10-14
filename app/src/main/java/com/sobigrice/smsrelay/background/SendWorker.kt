@@ -13,7 +13,7 @@ class SendWorker(context: Context, params: WorkerParameters) : Worker(context, p
         try {
             val account = graph.config.account() ?: return Result.success()
             if (graph.config.mailFault != null) return Result.success()
-            val runner = QueueRunner(graph.queue, QqMailSender())
+            val runner = QueueRunner(graph.queue, SmtpMailSender())
             val outcome = runner.run(account,
                 forwardingEnabled = { graph.config.enabled },
                 stopped = {

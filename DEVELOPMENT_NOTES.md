@@ -41,3 +41,20 @@ S21 / Android 15，用户反馈锁屏延迟、解锁补发。应用前台服务�
 ## 开机广播排队与实际转发分层核对（2026-10-14）
 
 S21 / Android 15 / 0.1.3 真机重启首次解锁后，初查 RelayService 未运行，但 BOOT_COMPLETED 的 BootReceiver 仍为 PENDING OFFLOAD，尚未送达；系统最终记录排队 81.770 秒后 DELIVERED，前台服务自行恢复。期间短信广播与 WorkManager 已在 3.981 秒内完成 QQ SMTP 接受，用户确认 iPhone 收到，全程未打开 App。没有故障修补或权限调整。下次检查开机恢复，分别核对开机计数、解锁状态、系统广播投递状态、服务、队列及用户实际邮件，避免只凭服务暂未出现就误判失败或增加启动补丁。此次只证实 USB 连接、首次解锁后的恢复；尚未解锁和拔线过夜不在结论范围。证据见 deliverables/verification.md 的 S21 真机重启恢复条目。
+
+## 通用 SMTP 与 Material 3 迁移（2026-10-14 / 0.2.0）
+
+用户纠正：邮箱路线不应等于 QQ 独占，UI 使用安卓 Material Design。此前服务器、端口、域名和 16 位凭据校验被写进生产实现；现在通用 `MailAccount.create` / `SmtpMailSender` 从显式保存的参数发信，QQ / 163 仅作可编辑预设。旧 QQ 常量只用于旧数据读取和历史队列身份，不能作为新配置的默认业务限制。
+
+开放服务器时同时检查持久队列与凭据复用：仅比较发件地址不足以识别服务器变更。每条消息绑定主机、端口、TLS 方式及登录用户名；未知版本保留原数据，旧 payload 固定原 QQ 通道。密码不套用 QQ 去空白规则；服务器或身份改变后不得自动沿用旧密码。回归入口为 `QueueRunnerTest`、`ConfigMigrationTest`、`QueueDatabaseTest` 与 `MailSettingsUiTest`，本地 TLS / STARTTLS 服务器验证证书校验与升级前不发送凭据。
+
+Compose 测试经验：首次长表单的后续 LazyColumn item 可能尚未组合，`onNodeWithTag(...).performScrollTo()` 找不到它不等于产品控件不存在。本轮首次设置测试因此失败，其他 26 个原生场景通过；改为在带标签的懒列表上 `performScrollToNode`，不增加等待或改动产品布局掩盖夹具问题。View → ComponentActivity 同步使用 Activity Result 权限 API，保留开始意图与原扫描游标。最终实际结果见本地 `deliverables/verification-material-smtp-0.2.0.md`；未把模拟器和本地 SMTP 测试当成真实邮箱投递或用户视觉验收。
+
+
+## 自适应图标资源迁移与原生测试夹具（2026-10-14 / 0.2.1）
+
+将相同命名图标从版本目录移动到 `mipmap-anydpi` 后，一次增量构建报 `mipmap/ic_launcher not found`。源文件单独 AAPT2 编译成功，资源 merger 已指向新路径，但 compile-file-map 仍指向删除的旧版本目录，合并输出也缺少图标；仅重跑 `:app:mergeDebugResources --rerun-tasks` 后恢复构建。不把删全局缓存当默认修复，先核对源资源、合并输出和编译映射。
+
+新隔离模拟器首次运行 28 项原生测试，4 项收件箱 / 管线用例因缺少预置短信失败；界面及其他 24 项通过，短信权限核对正常。`SmsInboxTest` 类注释要求由宿主预置两条相同的 `SMS relay local test 123456`；以后先检查夹具输入，不放宽断言或改动业务代码。所有短信注入、原生测试、动画缩放设置只能操作明确的临时模拟器 serial，不操作保留真实数据的用户手机。
+
+补齐两条夹具短信后，28 项全量原生测试通过；关闭系统 animator / transition / window 动画缩放后，额外 8 项界面测试通过。S21 仅保留数据覆盖安装，不执行原生测试或修改系统动画设置，原配置密文及 9 条记录全行内容核对一致，用户体验验收待确认。

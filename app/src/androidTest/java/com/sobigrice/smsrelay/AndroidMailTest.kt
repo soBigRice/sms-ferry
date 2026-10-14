@@ -13,11 +13,11 @@ import java.io.ByteArrayOutputStream
 @RunWith(AndroidJUnit4::class)
 class AndroidMailTest {
     @Test fun angusProviderAndUnicodeMimeWorkOnAndroidWithoutNetwork() {
-        val account = MailAccount.create("10001@qq.com", "abcdefghijklmnop", "10002@qq.com")
+        val account = MailAccount.legacyQq("10001@qq.com", "abcdefghijklmnop", "10002@qq.com")
         val job = MailJob(sourceSender = "106123", body = "安卓本地邮件格式测试🍚\n" + "完整中文正文。".repeat(100),
             receivedAt = 123, accountAddress = account.sender, recipientAddress = account.recipient)
-        val sender = QqMailSender()
-        val session = Session.getInstance(sender.properties())
+        val sender = SmtpMailSender()
+        val session = Session.getInstance(sender.properties(account))
         val transport = session.getTransport("smtp")
         assertFalse(transport.isConnected)
         transport.close()

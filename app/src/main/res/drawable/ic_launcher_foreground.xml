@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- The fold is transparent, so this same silhouette works for themed monochrome icons. -->
+    <path android:fillColor="#F0F8DA" android:fillType="evenOdd"
+        android:pathData="M31,32H77Q81,32 81,36V55Q81,66 70,68H38Q27,66 27,55V36Q27,32 31,32ZM31,36L51,51Q54,53 57,51L77,36V41L57,56Q54,58 51,56L31,41Z" />
+    <path android:fillColor="#F0F8DA"
+        android:pathData="M27,73C33,69 38,70 43,73C48,76 53,76 58,73C63,70 68,70 73,73C76,75 79,75 82,73L82,78C79,80 76,80 73,78C68,75 63,75 58,78C53,81 48,81 43,78C38,75 33,74 27,78Z" />
+</vector>
