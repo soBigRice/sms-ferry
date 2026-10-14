@@ -57,10 +57,10 @@ Android 系统短信收件箱
 
 **不要在公开 Issue、PR、评论或日志附件中发布真实短信、验证码、授权码、完整邮箱地址、设备备份或可直接利用的攻击细节。**
 
-1. 先查看仓库的 [Security → Advisories](https://github.com/soBigRice/sms-ferry/security/advisories)。若存在 **Report a vulnerability** 按钮，使用 GitHub 私密漏洞报告提交。
+1. 仓库已启用 GitHub 私密漏洞报告。请登录 GitHub，进入 [Security → Advisories](https://github.com/soBigRice/sms-ferry/security/advisories)，点击 **Report a vulnerability** 提交报告。
 2. 若该按钮不可用，可[创建 Issue](https://github.com/soBigRice/sms-ferry/issues/new)，仅说明“需要私密安全联系渠道”，等待维护者提供渠道后再发送详情。公开 Issue 不应包含漏洞细节或敏感数据。
 
-以上流程依据 [GitHub 官方私密漏洞报告说明](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately)。`SECURITY.md` 与私密报告功能相互独立；截至本声明核对日期，仓库尚未启用私密报告，因此请以页面实际入口为准。
+以上流程依据 [GitHub 官方私密漏洞报告说明](https://docs.github.com/en/code-security/how-tos/report-and-fix-vulnerabilities/report-privately)。`SECURITY.md` 与私密报告功能相互独立；私密报告功能已于 2026-10-14 开启并通过 GitHub API 核实。
 
 通过私密渠道报告时，请提供：受影响的版本或 commit、Android / 设备版本、使用虚构数据的最小复现、预期与实际行为，以及影响范围。只在你有权测试的设备和账号上验证，不使用他人的真实短信或邮箱。
 
