@@ -16,6 +16,12 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 
 完整数据说明、风险边界和安全问题反馈方式见 [安全与隐私声明（SECURITY.md）](SECURITY.md)。
 
+## 免责声明
+
+本软件按“现状”提供，在适用法律允许的范围内不作明示或默示保证。短信与邮件可能延迟、遗漏、重复或发送失败，转发敏感内容也可能增加信息泄露及账号风险，请自行核对配置、保护凭据，不将本工具作为紧急通知或关键操作的唯一通道。
+
+完整条款见 [免责声明](SECURITY.md#免责声明)。源码继续采用 [MIT License](LICENSE)；本声明不修改其授权范围，也不排除或限制依法不得排除或限制的责任。
+
 ## 安装与首次设置
 
 1. 按下方“本地开发”构建，将 `app/build/outputs/apk/debug/app-debug.apk` 传到手机并安装。当前仓库提供源码，未上架，也未发布正式签名 APK。
