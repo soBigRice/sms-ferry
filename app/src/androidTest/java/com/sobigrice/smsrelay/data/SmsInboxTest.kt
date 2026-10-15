@@ -31,8 +31,10 @@ class SmsInboxTest {
         KeyStore.getInstance("AndroidKeyStore").apply { load(null); if (containsAlias(alias)) deleteEntry(alias) }
     }
     @Test fun providerImportKeepsTwoIdenticalMessagesAndDoesNotResendOnRescan() {
-        assertTrue("seed isolated emulator with two SMS messages", inbox.scan(account) { true } >= 2)
+        val configured = account.copy(template = MailTemplate("From {{sender}}", "SMS\n{{body}}"))
+        assertTrue("seed isolated emulator with two SMS messages", inbox.scan(configured) { true } >= 2)
         val jobs = queue.latest().map { requireNotNull(queue.job(it.id)) }
+        assertTrue(jobs.all { it.template == configured.template })
         assertTrue(jobs.count { it.body == "SMS relay local test 123456" } >= 2)
         assertEquals(jobs.size, jobs.map { it.sourceId }.toSet().size)
         assertEquals(0, inbox.scan(account) { true })

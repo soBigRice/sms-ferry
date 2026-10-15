@@ -141,6 +141,15 @@ class SmtpIntegrationTest {
             assertEquals("", server.data)
         }
     }
+    @Test fun customTemplateIsUsedForLocalTlsDelivery() {
+        LocalSmtp(Mode.ACCEPT).use { server ->
+            val template = MailTemplate("短信 {{sender}}", "{{body}}\n来源：{{sender}}")
+            assertEquals(SendResult.Accepted, sender(server).send(job.copy(template = template), account))
+            val parsed = MimeMessage(Session.getInstance(java.util.Properties()), ByteArrayInputStream(server.data.toByteArray(Charsets.UTF_8)))
+            assertEquals("短信 ${job.sourceSender}", parsed.subject)
+            assertEquals("${job.body}\n来源：${job.sourceSender}", (parsed.content as String).replace("\r\n", "\n"))
+        }
+    }
     @Test fun disconnectAfterDataLeavesDeliveryUncertain() {
         LocalSmtp(Mode.DROP_AFTER_DATA).use { server ->
             assertTrue(sender(server).send(job, account) is SendResult.Uncertain)

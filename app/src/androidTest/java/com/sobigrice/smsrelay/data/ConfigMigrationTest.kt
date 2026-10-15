@@ -48,4 +48,21 @@ class ConfigMigrationTest {
         assertThrows(IllegalArgumentException::class.java) { graph.config.account() }
         assertEquals(original, prefs.getString("account", null))
     }
+
+    @Test fun originalVersionTwoConfigGetsDefaultTemplateWithoutRewriting() {
+        val original = graph.crypto.encrypt(JSONObject().put("version", 2).put("sender", "alice@example.org")
+            .put("code", "password").put("recipient", "reader@example.net").put("smtpHost", "smtp.example.org")
+            .put("smtpPort", 587).put("security", "STARTTLS").put("username", "independent-login").toString())
+        prefs.edit().putString("account", original).commit()
+        assertEquals(MailTemplate.DEFAULT, graph.config.account()!!.template)
+        assertEquals(original, prefs.getString("account", null))
+    }
+
+    @Test fun customTemplateIsEncryptedAndSurvivesStoreRecreation() {
+        val template = MailTemplate("private-subject {{sender}}", "private-body {{body}}\n{{time}}")
+        val account = MailAccount.legacyQq("10001@qq.com", "abcdefghijklmnop", "10002@qq.com").copy(template = template)
+        graph.config.save(account)
+        assertEquals(account, ConfigStore(context, graph.crypto).account())
+        assertFalse(prefs.getString("account", null)!!.contains("private-"))
+    }
 }

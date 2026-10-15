@@ -6,7 +6,7 @@
 
 A lightweight Android app that forwards SMS to email, without a relay server.
 
-[官网](https://sobigrice.github.io/sms-ferry/) · [下载 0.2.2 预览版 APK](https://github.com/soBigRice/sms-ferry/releases/download/v0.2.2/sms-ferry-0.2.2-debug.apk) · [版本说明](https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.2)
+[官网](https://sobigrice.github.io/sms-ferry/) · [下载 0.2.3 预览版 APK](https://github.com/soBigRice/sms-ferry/releases/download/v0.2.3/sms-ferry-0.2.3-debug.apk) · [版本说明](https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.3)
 
 当前版本为早期个人自用工具，主要在三星 S21 / One UI 7（Android 15）上验证；最低支持 Android 8.0，不代表所有设备都已实测。仅使用于你有权管理的手机和短信。
 
@@ -50,6 +50,23 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 - 中英文界面默认跟随系统；首页底部“语言 / Language”可选中文、English 或跟随系统。Android 13+ 也可从系统“应用语言”选择。设置、运行状态、记录说明、错误提示和通知均按当前语言显示；切换不会修改邮箱配置或队列。
 - 首页只读邮箱摘要，配置移到独立设置页；测试邮件与开始转发使用已保存设置，不会悄悄保存输入。修改时测试按钮禁用，保存后才可测试。
 - 发送账号、接收地址和 SMTP 服务器身份在入队时固定，更改设置不偷偷改掉旧队列的目的地或发送通道。
+- 可配置邮件标题和纯文本正文模板，支持来源号码、接收时间和完整短信变量；本地示例预览、恢复默认，旧队列保留原模板。
+
+## 邮件模板 / Email templates
+
+进入 **邮箱设置 → 编辑配置 → 邮件模板**，修改标题与正文后点击 **保存设置**。支持以下变量，标题也可使用：
+
+| 变量 / Variable | 内容 / Value |
+|---|---|
+| `{{sender}}` | 短信来源号码 / SMS sender |
+| `{{time}}` | 含时区的短信接收时间 / Received time with time zone |
+| `{{body}}` | 完整短信正文 / Full SMS text |
+
+例如标题填 `短信 · {{sender}}`，正文填 `{{body}}`，即可仅显示短信内容。正文必须保留 `{{body}}`；标题模板最多 300 字符且不能换行，正文模板最多 10,000 字符，实际短信正文不会因模板长度限制而截短。不支持 HTML 或脚本。
+
+**用示例短信预览**只使用本地假数据，不读取真实短信、不发送邮件。恢复默认也需要保存；取消或返回会丢弃修改。保存后再发送测试邮件，可验证自定义模板与 SMTP；未自定义时保留原测试邮件格式。模板加密保存在本机，入队时为每封邮件保存快照，修改模板不会改变已有记录的重试格式。缺少模板的旧配置和旧队列继续使用原格式。
+
+Open **Email settings → Edit configuration → Email template**, edit the subject and body, then save. The body must include `{{body}}`. Templates use plain text, with a single-line subject of up to 300 characters and a body template of up to 10,000 characters; the full SMS is preserved. Preview uses local sample data and sends nothing. Restore defaults requires saving; cancel/back discards edits. A test email uses your saved custom template. Templates are stored encrypted, and queued emails keep their original template when retried. Existing configurations and records retain the default format.
 
 ## 可靠性边界
 
@@ -67,6 +84,8 @@ A lightweight Android app that forwards SMS to email, without a relay server.
 0.2.2 增加首页「检查更新」：从 [GitHub Releases](https://github.com/soBigRice/sms-ferry/releases) 获取新版本，支持预览版；下载后校验安装包，再由 Android 确认安装。首次需手动安装含此入口的 APK，之后可在应用内升级。必须沿用相同包名与签名；覆盖安装保留邮箱配置和记录。更新失败不改变转发设置。
 
 更新契约、签名要求与后续发版步骤见 [GitHub 应用更新](docs/updates.md)。公开下载链接指向 GitHub Release，安装包不进入源码历史。
+
+0.2.3 增加可配置邮件模板。已安装 0.2.2 的用户可从首页 **检查更新 → 下载更新 → 安装更新** 升级；现有邮箱配置与队列保留。After installing 0.2.2, use **Check for updates → Download update → Install update** to upgrade to 0.2.3 with configurable email templates.
 
 ## 本地开发
 

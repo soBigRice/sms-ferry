@@ -9,7 +9,10 @@ enum class MailSecurity(val label: String, val defaultPort: Int) {
     TLS("SSL/TLS", 465), STARTTLS("STARTTLS", 587)
 }
 
-enum class MailValidation { SENDER, RECIPIENT, CREDENTIAL, USERNAME, HOST, PORT, IDENTITY_CHANGED }
+enum class MailValidation {
+    SENDER, RECIPIENT, CREDENTIAL, USERNAME, HOST, PORT, IDENTITY_CHANGED,
+    TEMPLATE_SUBJECT, TEMPLATE_BODY, TEMPLATE_VARIABLE, TEMPLATE_MISSING_BODY,
+}
 class MailValidationException(val reason: MailValidation) : IllegalArgumentException(reason.name)
 
 data class SmtpIdentity(val host: String, val port: Int, val security: MailSecurity, val username: String)
@@ -17,13 +20,15 @@ data class SmtpIdentity(val host: String, val port: Int, val security: MailSecur
 data class MailAccount(
     val sender: String, val authorizationCode: String, val recipient: String,
     val smtpHost: String, val smtpPort: Int, val security: MailSecurity, val username: String,
+    val template: MailTemplate = MailTemplate.DEFAULT,
 ) {
     val identity: SmtpIdentity get() = SmtpIdentity(smtpHost, smtpPort, security, username)
     override fun toString() = "MailAccount(sender=$sender, authorizationCode=[redacted], recipient=$recipient, smtpHost=$smtpHost, smtpPort=$smtpPort, security=$security, username=$username)"
     companion object {
         private val address = Regex("[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}")
         fun create(sender: String, code: String, recipient: String, smtpHost: String,
-                   smtpPort: Int, security: MailSecurity, username: String = sender): MailAccount {
+                   smtpPort: Int, security: MailSecurity, username: String = sender,
+                   template: MailTemplate = MailTemplate.DEFAULT): MailAccount {
             val from = sender.trim()
             val to = recipient.trim()
             require(from.length <= 254 && address.matches(from)) { throw MailValidationException(MailValidation.SENDER) }
@@ -43,7 +48,7 @@ data class MailAccount(
                 throw MailValidationException(MailValidation.HOST)
             }
             require(smtpPort in 1..65535) { throw MailValidationException(MailValidation.PORT) }
-            return MailAccount(from, code, to, host, smtpPort, security, login)
+            return MailAccount(from, code, to, host, smtpPort, security, login, template)
         }
 
         /** Only pre-0.2.0 persisted data uses the original QQ endpoint. */
@@ -69,6 +74,7 @@ data class MailJob(
     val recipientAddress: String,
     val kind: JobKind = JobKind.SMS,
     val smtpIdentity: SmtpIdentity? = null,
+    val template: MailTemplate = MailTemplate.DEFAULT,
 ) {
     // Missing identity is a legacy record, never a wildcard for the current server.
     fun deliveryIdentity() = smtpIdentity ?: SmtpIdentity("smtp.qq.com", 465, MailSecurity.TLS, accountAddress)

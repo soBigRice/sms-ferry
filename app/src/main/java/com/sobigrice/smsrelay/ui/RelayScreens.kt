@@ -191,13 +191,16 @@ private fun HistoryEntry(row: HistoryRow, showDivider: Boolean, open: () -> Unit
 data class SettingsDraft(
     val sender: String = "", val recipient: String = "", val host: String = "", val port: String = "465",
     val username: String = "", val password: String = "", val security: MailSecurity = MailSecurity.TLS,
+    val templateSubject: String = MailTemplate.DEFAULT_SUBJECT, val templateBody: String = MailTemplate.DEFAULT_BODY,
 ) {
     companion object {
         fun from(account: MailAccount?) = account?.let { SettingsDraft(it.sender, it.recipient, it.smtpHost,
-            it.smtpPort.toString(), it.username, security = it.security) } ?: SettingsDraft()
+            it.smtpPort.toString(), it.username, security = it.security,
+            templateSubject = it.template.subject, templateBody = it.template.body) } ?: SettingsDraft()
     }
 }
-data class SavedMailSummary(val sender: String, val recipient: String, val host: String, val port: Int, val username: String, val security: MailSecurity)
+data class SavedMailSummary(val sender: String, val recipient: String, val host: String, val port: Int, val username: String,
+    val security: MailSecurity, val template: MailTemplate = MailTemplate.DEFAULT)
 data class SettingsState(
     val saved: SavedMailSummary? = null, val draft: SettingsDraft = SettingsDraft(), val editing: Boolean = false,
     val busy: Boolean = false, val readable: Boolean = true, val error: String? = null,
@@ -220,6 +223,13 @@ fun MailSettingsScreen(state: SettingsState, actions: SettingsActions) {
             keyboard?.hide()
         }
         listState.animateScrollToItem(0)
+    }
+    LaunchedEffect(state.error) {
+        if (state.error != null) {
+            // 错误插入到保存按钮之前时，LazyColumn 会保留原滚动锚点；主动展示反馈。 / Reveal validation inserted before the saved scroll anchor.
+            val precedingCards = 1 + if (state.editing || state.saved != null) 1 else 0
+            listState.animateScrollToItem(precedingCards)
+        }
     }
     Scaffold(topBar = { TopAppBar(title = { Text(stringResource(R.string.mail_settings)) }, navigationIcon = {
         TextButton(onClick = actions.back, modifier = Modifier.testTag("backButton")) { Text(stringResource(R.string.back)) }
@@ -282,19 +292,30 @@ fun MailSettingsScreen(state: SettingsState, actions: SettingsActions) {
                                 MailField("codeInput", stringResource(R.string.credential), draft.password, KeyboardType.Password, secret = true,
                                     help = if (state.saved != null) stringResource(R.string.credential_keep_help) else stringResource(R.string.credential_new_help)) { actions.draft(draft.copy(password = it)) }
                                 MailField("recipientInput", stringResource(R.string.recipient), draft.recipient, KeyboardType.Email) { actions.draft(draft.copy(recipient = it)) }
-                                Text(stringResource(R.string.draft_help),
-                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    OutlinedButton(onClick = actions.cancel, enabled = !state.busy && editing == state.editing,
-                                        modifier = Modifier.weight(1f).testTag("cancelButton")) { Text(stringResource(R.string.cancel_changes)) }
-                                    Button(onClick = actions.save, enabled = !state.busy && editing == state.editing && state.readable,
-                                        modifier = Modifier.weight(1f).testTag("saveButton")) { Text(stringResource(R.string.save_settings)) }
-                                }
                             }
                         }
                     }
                 }
-                state.error?.let { error -> item { ErrorMessage(error) } }
+                if (state.editing || state.saved != null) item(key = "template") {
+                    val subject = if (state.editing) state.draft.templateSubject else state.saved!!.template.subject
+                    val body = if (state.editing) state.draft.templateBody else state.saved!!.template.body
+                    MailTemplateSection(subject, body, state.editing) { nextSubject, nextBody ->
+                        actions.draft(state.draft.copy(templateSubject = nextSubject, templateBody = nextBody))
+                    }
+                }
+                state.error?.let { error -> item(key = "settingsError") { ErrorMessage(error) } }
+                if (state.editing) item(key = "save") {
+                    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                        Text(stringResource(R.string.draft_help),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            OutlinedButton(onClick = actions.cancel, enabled = !state.busy,
+                                modifier = Modifier.weight(1f).testTag("cancelButton")) { Text(stringResource(R.string.cancel_changes)) }
+                            Button(onClick = actions.save, enabled = !state.busy && state.readable,
+                                modifier = Modifier.weight(1f).testTag("saveButton")) { Text(stringResource(R.string.save_settings)) }
+                        }
+                    }
+                }
                 item {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         Button(onClick = actions.test, enabled = !state.editing && !state.busy && state.saved != null && state.readable,

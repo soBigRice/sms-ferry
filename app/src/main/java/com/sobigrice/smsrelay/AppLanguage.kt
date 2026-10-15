@@ -69,4 +69,8 @@ fun Context.describe(validation: MailValidation): String = getString(when (valid
     MailValidation.HOST -> R.string.validation_host
     MailValidation.PORT -> R.string.validation_port
     MailValidation.IDENTITY_CHANGED -> R.string.credential_changed
+    MailValidation.TEMPLATE_SUBJECT -> R.string.validation_template_subject
+    MailValidation.TEMPLATE_BODY -> R.string.validation_template_body
+    MailValidation.TEMPLATE_VARIABLE -> R.string.validation_template_variable
+    MailValidation.TEMPLATE_MISSING_BODY -> R.string.validation_template_missing_body
 })

@@ -46,6 +46,7 @@ class MailSettingsUiTest {
         compose.onNodeWithTag("editButton").performScrollTo().performClick()
         compose.onNodeWithTag("recipientInput").performScrollTo().performTextReplacement("10003@qq.com")
         compose.onNodeWithTag("codeInput").performScrollTo().performTextInput("ponmlkjihgfedcba")
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("cancelButton"))
         compose.onNodeWithTag("cancelButton").performScrollTo().performClick()
         compose.onNodeWithTag("editForm").assertDoesNotExist()
         assertEquals(saved, graph.config.account())
@@ -69,6 +70,7 @@ class MailSettingsUiTest {
         compose.onNodeWithTag("testButton").performScrollTo().assertIsNotEnabled()
         assertEquals(saved, graph.config.account())
         assertEquals(before, graph.queue.counts())
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("saveButton"))
         compose.onNodeWithTag("saveButton").performScrollTo().performClick()
         compose.onNodeWithTag("editForm").assertDoesNotExist()
         assertEquals(saved.copy(recipient = "10003@qq.com"), graph.config.account())
@@ -87,6 +89,7 @@ class MailSettingsUiTest {
         launch(MailSettingsActivity::class.java)
         compose.onNodeWithTag("editButton").performScrollTo().performClick()
         compose.onNodeWithTag("hostInput").performScrollTo().performTextReplacement("smtp.example.org")
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("saveButton"))
         compose.onNodeWithTag("saveButton").performScrollTo().performClick()
         assertEquals(saved, graph.config.account())
         compose.onNodeWithText(AppLanguage.wrap(context).getString(R.string.credential_changed)).assertExists()
@@ -100,6 +103,7 @@ class MailSettingsUiTest {
         compose.onNodeWithTag("usernameInput").performScrollTo().performTextReplacement("smtp-user")
         compose.onNodeWithTag("codeInput").performScrollTo().performTextInput("pass word!")
         compose.onNodeWithTag("recipientInput").performScrollTo().performTextReplacement("reader@example.net")
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("saveButton"))
         compose.onNodeWithTag("saveButton").performScrollTo().performClick()
         assertEquals(MailAccount.create("alice@example.org", "pass word!", "reader@example.net", "smtp.example.org", 587,
             MailSecurity.STARTTLS, "smtp-user"), graph.config.account())
@@ -117,6 +121,74 @@ class MailSettingsUiTest {
         assertEquals(saved, graph.config.account())
         assertEquals(MailFailure.AUTH, graph.config.mailFault)
     }
+    @Test fun templatePreviewDoesNotSendAndSavePersistsWithoutChangingQueuedMail() {
+        val original = MailJob(sourceSender = "106123", body = "queued sample", receivedAt = 123,
+            accountAddress = saved.sender, recipientAddress = saved.recipient, smtpIdentity = saved.identity)
+        graph.queue.enqueue(original)
+        launch(MailSettingsActivity::class.java)
+        val before = graph.queue.counts()
+        compose.onNodeWithTag("editButton").performClick()
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("templateCard"))
+        compose.onNodeWithTag("templateSubjectInput").performScrollTo().performTextReplacement("SMS {{sender}}")
+        compose.onNodeWithTag("templateBodyInput").performScrollTo().performTextReplacement("{{body}}\nFrom {{sender}}")
+        compose.onNodeWithTag("templatePreviewButton").performScrollTo().performClick()
+        compose.onNodeWithTag("templatePreviewSubject").assertTextEquals("SMS 10612345678")
+        compose.onNodeWithTag("templatePreviewBody").assertTextContains("From 10612345678", substring = true)
+        compose.onNodeWithTag("templatePreviewClose").performClick()
+        assertEquals(saved, graph.config.account())
+        assertEquals(before, graph.queue.counts())
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("saveButton"))
+        compose.onNodeWithTag("saveButton").performScrollTo().performClick()
+        assertEquals(MailTemplate("SMS {{sender}}", "{{body}}\nFrom {{sender}}"), graph.config.account()!!.template)
+        assertEquals(original, graph.queue.job(original.id))
+        assertFalse(graph.config.enabled)
+        compose.onNodeWithTag("editButton").performScrollTo().performClick()
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("templateCard"))
+        compose.onNodeWithTag("templateSubjectInput").performScrollTo().assertTextContains("SMS {{sender}}", substring = false)
+    }
+
+    @Test fun invalidTemplateCannotSaveAndResetOnlyAppliesAfterSave() {
+        val custom = saved.copy(template = MailTemplate("Saved {{sender}}", "{{body}}\nSaved"))
+        graph.config.save(custom)
+        graph.config.mailFault = MailFailure.AUTH
+        launch(MailSettingsActivity::class.java)
+        compose.onNodeWithTag("editButton").performClick()
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("templateCard"))
+        compose.onNodeWithTag("templateBodyInput").performScrollTo().performTextReplacement("missing full text")
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("saveButton"))
+        compose.onNodeWithTag("saveButton").performScrollTo().performClick()
+        compose.onNodeWithText(AppLanguage.wrap(context).getString(R.string.validation_template_missing_body)).assertIsDisplayed()
+        assertEquals(custom, graph.config.account())
+        assertEquals(MailFailure.AUTH, graph.config.mailFault)
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("templateCard"))
+        compose.onNodeWithTag("templateResetButton").performScrollTo().performClick()
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("cancelButton"))
+        compose.onNodeWithTag("cancelButton").performScrollTo().performClick()
+        assertEquals(custom, graph.config.account())
+        compose.onNodeWithTag("editButton").performScrollTo().performClick()
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("templateCard"))
+        compose.onNodeWithTag("templateResetButton").performScrollTo().performClick()
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("saveButton"))
+        compose.onNodeWithTag("saveButton").performScrollTo().performClick()
+        assertEquals(MailTemplate.DEFAULT, graph.config.account()!!.template)
+    }
+
+    @Test fun testEmailQueuesTheSavedTemplate() {
+        // 仅允许回环连接，测试不向外部邮件服务器发信。 / Loopback only; this test never contacts an external mail server.
+        val local = MailAccount.create("sender@example.org", "fake-password", "reader@example.net", "127.0.0.1", 465,
+            MailSecurity.TLS, template = MailTemplate("Test {{sender}}", "{{body}}\n{{time}}"))
+        graph.config.save(local)
+        val previousIds = graph.queue.latest().map { it.id }.toSet()
+        launch(MailSettingsActivity::class.java)
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("testButton"))
+        compose.onNodeWithTag("testButton").performScrollTo().performClick()
+        compose.waitUntil(10_000) { graph.queue.latest().any { it.id !in previousIds && it.kind == JobKind.TEST } }
+        val queued = graph.queue.latest().first { it.id !in previousIds && it.kind == JobKind.TEST }.let { graph.queue.job(it.id)!! }
+        assertEquals(local.template, queued.template)
+        assertEquals(local.identity, queued.smtpIdentity)
+        assertEquals(local.recipient, queued.recipientAddress)
+    }
+
     private fun launch(type: Class<out Activity>) {
         activity = instrumentation.startActivitySync(Intent(context, type)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))

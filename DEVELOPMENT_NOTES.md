@@ -6,6 +6,12 @@
 
 本文引用的 `deliverables/verification.md` 为本地设备验收记录，不随源码仓库发布；公开的验证入口与适用范围见 [README](README.md) 和 [PROJECT_MAP](PROJECT_MAP.md)。
 
+## 邮件模板的 Android 兼容与校验反馈（2026-10-15）
+
+邮件模板变量匹配：JDK 17 单元测试接受未转义的右花括号，但 Android 16 ICU 在类初始化时报 PatternSyntaxException，导致 MailTemplate 不可用。左右两组花括号全部显式转义后，须以 Android 原生模板 / MIME 与设置页测试确认，不能把宿主 JVM 通过当作 Android 正则兼容。最小防线是 `AndroidMailTest` 的实际 MIME 构建和 `MailSettingsUiTest` 的模板预览 / 保存；完整变量语义由 `MailTemplateTest` 覆盖。本轮根因已定位，修复后的最终结果见 PROJECT_MAP 验证记录。
+
+同轮新增模板卡后，错误作为保存按钮之前的新 LazyColumn item 插入，原按钮滚动锚点会让错误留在屏幕外。`MailSettingsScreen` 现在随 `state.error` 主动滚动到错误项，`invalidTemplateCannotSaveAndResetOnlyAppliesAfterSave` 断言错误实际可见。离屏列表项用 `performScrollToNode` 定位；文本输入值断言需区分字段标签和 EditableText。最终 Android 16 的 33 项目标回归通过；真实邮件投递与用户主观验收另行确认。
+
 ## SMTP 结果不明 / 重复发送（2026-10-13）
 
 适用：SMTP 直发短信邮件。连接失败与 DATA 提交后断线不是同一故障，后者可能已经投递。不能把任何异常统一设为可重试，也不能把固定 Message-ID 当作 exactly-once 保证。采用持久 sending 标记；进程恢复和不明确发送异常转 uncertain，让用户先核对邮箱。单元和本地 TLS 故障测试覆盖接受、认证拒绝、DATA 后断线。

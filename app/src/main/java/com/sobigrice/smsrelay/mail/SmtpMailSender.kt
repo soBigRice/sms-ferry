@@ -8,9 +8,7 @@ import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
 import org.eclipse.angus.mail.smtp.SMTPAddressFailedException
 import org.eclipse.angus.mail.smtp.SMTPSendFailedException
-import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.Properties
 import javax.net.ssl.SSLException
 
@@ -41,20 +39,15 @@ class SmtpMailSender internal constructor(
     }
 
     internal fun message(session: Session, job: MailJob): MimeMessage {
-        val date = SimpleDateFormat("yyyy-MM-dd HH:mm:ss XXX", Locale.CHINA).format(Date(job.receivedAt))
-        val source = job.sourceSender.replace(Regex("[\\r\\n]"), " ").take(80)
-        val subject = if (job.kind == JobKind.TEST) "[信渡] 邮箱连接测试"
-            else "[信渡] $source · $date"
-        val content = if (job.kind == JobKind.TEST) job.body else
-            "来源号码：${job.sourceSender}\n接收时间：$date\n设备：安卓短信接收端\n\n${job.body}"
+        val content = job.template.render(job)
         // Preserve Message-ID across explicit retries, although SMTP recipients need not deduplicate it.
         return object : MimeMessage(session) {
             override fun updateMessageID() { setHeader("Message-ID", "<sms-${job.id}@smsrelay.local>") }
         }.apply {
             setFrom(InternetAddress(job.accountAddress, "信渡", "UTF-8"))
             setRecipient(Message.RecipientType.TO, InternetAddress(job.recipientAddress, true))
-            setSubject(subject, "UTF-8")
-            setText(content, "UTF-8")
+            setSubject(content.subject, "UTF-8")
+            setText(content.body, "UTF-8")
             sentDate = Date(job.receivedAt)
             saveChanges()
         }

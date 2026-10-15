@@ -1,0 +1,18 @@
+<resources>
+    <string name="template_title">Email template</string>
+    <string name="template_scope">Saved templates apply to newly queued emails. Existing records keep their original template when retried. Emails use plain text.</string>
+    <string name="template_variables">Variables: {{sender}} = SMS sender, {{time}} = received time with time zone, {{body}} = full SMS text. Variables also work in the subject.</string>
+    <string name="template_subject">Subject template</string>
+    <string name="template_body">Body template</string>
+    <string name="template_body_help">Keep {{body}} to include the full SMS. Up to 10,000 template characters.</string>
+    <string name="template_default">Using the original default template</string>
+    <string name="template_custom">Using a custom template</string>
+    <string name="template_preview">Preview with sample SMS</string>
+    <string name="template_reset">Restore default template</string>
+    <string name="template_sample_notice">Sample data only. No SMS is read and no email is sent. Save before sending a test email.</string>
+    <string name="template_sample_body">Sample SMS: Your verification code is 123456.\nDo not share this code.</string>
+    <string name="validation_template_subject">Enter a single-line subject template of up to 300 characters, without control characters.</string>
+    <string name="validation_template_body">Enter a body template of up to 10,000 characters, without null characters.</string>
+    <string name="validation_template_variable">Use only {{sender}}, {{time}}, and {{body}}. Check for unknown variables or incomplete double braces.</string>
+    <string name="validation_template_missing_body">Keep {{body}} in the body template so the full SMS is included.</string>
+</resources>

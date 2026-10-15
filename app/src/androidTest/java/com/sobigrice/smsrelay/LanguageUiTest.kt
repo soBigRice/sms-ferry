@@ -84,6 +84,7 @@ class LanguageUiTest {
         compose.onNodeWithText("Saved configuration · Read only").assertExists()
         compose.onNodeWithTag("editButton").performClick()
         compose.onNodeWithTag("hostInput").performTextReplacement("https://invalid.example/path")
+        compose.onNodeWithTag("settingsList").performScrollToNode(hasTestTag("saveButton"))
         compose.onNodeWithTag("saveButton").performScrollTo().performClick()
         compose.onNodeWithTag("settingsList").performScrollToNode(hasText("Enter an SMTP hostname or IP without a protocol, port, or path"))
         compose.onNodeWithText("Enter an SMTP hostname or IP without a protocol, port, or path").assertExists()

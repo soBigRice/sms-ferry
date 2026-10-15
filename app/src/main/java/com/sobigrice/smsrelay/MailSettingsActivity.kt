@@ -47,7 +47,7 @@ class MailSettingsActivity : ComponentActivity() {
     private fun render() {
         val account = savedAccount()
         screenState = screenState.copy(saved = account?.let { SavedMailSummary(it.sender, it.recipient,
-            it.smtpHost, it.smtpPort, it.username, it.security) }, readable = configurationReadable)
+            it.smtpHost, it.smtpPort, it.username, it.security, it.template) }, readable = configurationReadable)
     }
 
     private fun beginEditing() {
@@ -89,7 +89,8 @@ class MailSettingsActivity : ComponentActivity() {
                 old?.takeIf { it.identity == candidate.identity && it.sender.equals(candidate.sender, true) }?.authorizationCode
                     ?: throw MailValidationException(if (old != null) MailValidation.IDENTITY_CHANGED else MailValidation.CREDENTIAL)
             }
-            val account = MailAccount.create(draft.sender, credential, draft.recipient, draft.host, port, draft.security, draft.username)
+            val template = MailTemplate(draft.templateSubject, draft.templateBody)
+            val account = MailAccount.create(draft.sender, credential, draft.recipient, draft.host, port, draft.security, draft.username, template)
             relay.config.save(account)
             for (problem in relay.queue.problems()) {
                 if (problem.failure in setOf(MailFailure.AUTH, MailFailure.TLS, MailFailure.CONFIG) &&
@@ -113,7 +114,7 @@ class MailSettingsActivity : ComponentActivity() {
                 relay.queue.enqueue(MailJob(sourceSender = getString(R.string.test_source),
                     body = getString(R.string.test_body),
                     receivedAt = System.currentTimeMillis(), accountAddress = account.sender,
-                    recipientAddress = account.recipient, kind = JobKind.TEST, smtpIdentity = account.identity))
+                    recipientAddress = account.recipient, kind = JobKind.TEST, smtpIdentity = account.identity, template = account.template))
                 QueueScheduler.send(this)
                 runOnUiThread { if (!isDestroyed) toast(getString(R.string.test_queued)) }
             } catch (_: Exception) {

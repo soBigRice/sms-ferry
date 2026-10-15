@@ -36,7 +36,7 @@ class SmsInbox(private val context: Context, private val queue: QueueDatabase) {
         while (size < 200 && cursor.moveToNext()) add(MailJob(sourceId = cursor.getLong(0),
             sourceSender = cursor.getString(1) ?: "未知号码", body = cursor.getString(2) ?: "",
             receivedAt = cursor.getLong(3), accountAddress = account.sender, recipientAddress = account.recipient,
-            smtpIdentity = account.identity))
+            smtpIdentity = account.identity, template = account.template))
     } } ?: throw IllegalStateException("SMS provider unavailable")
 
     private fun queryArgs(after: Long, descending: Boolean = false) = Bundle().apply {

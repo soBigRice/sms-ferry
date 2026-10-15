@@ -1,6 +1,6 @@
 # 信渡 · SMS Ferry 实现地图
 
-核对日期：2026-10-14。安卓个人自用接收端，目标三星 S21 / One UI 7。授权范围与行为约定见 [邮件第一版设计](docs/email-design.md)，安装与验收见 [README](README.md)。
+核对日期：2026-10-15（本轮核对邮件模板与设置 / 入队 / MIME 链路）。安卓个人自用接收端，目标三星 S21 / One UI 7。授权范围与行为约定见 [邮件第一版设计](docs/email-design.md)，安装与验收见 [README](README.md)。
 
 应用中文显示名为“信渡”，英文显示名为 `SMS Ferry`，Gradle 项目名为 `SmsFerry`；包名 / applicationId 保持 `com.sobigrice.smsrelay`，兼容原有安装及加密配置。原有邮件标题前缀与发件人显示名仍为“信渡”。`deliverables/` 是不随源码发布的本地验收记录。
 
@@ -26,6 +26,7 @@
 | `QueueDatabase` | 加密记录、唯一 source_id、扫描游标、原子领取、状态与 30 天清理 |
 | `SendWorker` / `QueueRunner.run` | 每轮最多 5 条，暂停及取消检查，认证阻塞，退避与结果不明 |
 | `SmtpMailSender` | 读取通用 SMTP 配置；TLS / 强制 STARTTLS、MIME UTF-8 正文、稳定 Message-ID、失败分类 |
+| `mail.MailTemplate` / `ui.MailTemplateSection` | 受限纯文本变量、标题安全处理、完整正文约束；编辑、示例预览与恢复默认 |
 | `CryptoStore` / `ConfigStore` | Keystore AES-GCM；旧 QQ / version 2 SMTP 配置兼容读取，开启状态和安全错误码持久化 |
 | `MailAccount.identity` / `MailJob.belongsTo` | 服务器、端口、TLS 类型、用户名及发件地址身份校验；旧记录限定原 QQ 身份 |
 | `ui.SmsFerryTheme` / `ui.RelayScreens` | Compose + Material 3；系统深浅色 / 动态配色、有类型的显示状态和操作事件 |
@@ -58,6 +59,18 @@ SMS_RECEIVED / 收件箱变化 / 周期恢复 / 手动补查
 只有 `MailSettingsActivity.saveSettings` 可以从界面写入邮箱配置；测试按钮在编辑中禁用且处理函数也拒绝发送。`MainActivity.withSavedAccount` 和 `MailSettingsActivity.sendSavedAccountTest` 仅读取已保存账号，不暗中保存表单，也不因测试/开始转发清除认证故障。凭据不回填且草稿不保存到系统状态；留空仅在发件地址及完整 SMTP 身份相同的情况下沿用，换服务器 / 端口 / TLS 方式 / 用户名必须重新输入。只读页面仅显示“已加密保存”。首页地址脱敏，设置页显示完整参数便于核对。
 
 显式保存保留原有认证故障恢复规则：只允许同一发件地址及 SMTP 身份的 AUTH/TLS/CONFIG 已知未接受记录恢复待发送；UNCERTAIN 和旧队列目的地保持原语义。编辑、取消和保存均不改变开启状态、扫描基线或已有队列内容。
+
+## 邮件模板
+
+`SettingsDraft.templateSubject/templateBody` → `MailSettingsActivity.saveSettings` → `MailTemplate` 校验 → `MailAccount.template` → `ConfigStore.save` 原 version 2 加密 JSON 的可选 `template`。模板缺失回退原默认；读取旧配置不重写。数据库表结构、包名与 Keystore 不变。
+
+`SmsInbox.readPage` / `MailSettingsActivity.sendSavedAccountTest` → 将已保存模板复制到 `MailJob.template` → `QueueDatabase.encode/decode` 原加密 payload 的可选 `template` → `SmtpMailSender.message` → `MailTemplate.render` → UTF-8 MIME。旧 payload 缺少模板使用原格式；已入队记录及其重试不读取当前账号模板。模板不属于 `SmtpIdentity`，只改模板无需重新输入同一服务器的凭据。
+
+只识别 `{{sender}}` / `{{time}}` / `{{body}}`，单次替换，不解析短信内的花括号。正文模板必须包含 `{{body}}`；模板长度限制不截短信正文。标题模板不接受换行和控制字符，变量进入标题后统一清理这些字符；来源号码在标题中继续沿用原 80 字符限制。默认短信格式与默认连接测试保持原样，自定义测试邮件使用已保存模板和测试内容。时间继续使用设备时区。
+
+`ui.MailTemplateSection` 的预览用固定虚构号码、时间与本地化示例正文，复用 `MailTemplate.render`，不读取账号凭据、短信或队列，也不联网。恢复默认只改草稿，显式保存才生效；界面文案与校验错误有中英文。契约与选择依据见 [邮件设计](docs/email-design.md#邮件模板2026-10-15)。
+
+`MailSettingsScreen` 在 `state.error` 变化后滚动至摘要和可选模板卡之后的错误项，避免 LazyColumn 保持保存按钮锚点而把新增错误藏到屏幕外。编辑态的保存 / 取消是独立列表项；界面测试先用 `settingsList.performScrollToNode` 定位，不能依赖尚未组合的离屏节点。
 
 ## 运行检查与精简界面
 
@@ -105,11 +118,16 @@ stateDiagram-v2
 
 ## 验证定位
 
+2026-10-15 邮件模板实现验证：43 项单元测试通过（含模板与本地 TLS 发送）、Lint 0 error / 24 warning、App 与测试 APK 构建通过；隔离 Android 16 的 `QueueDatabaseTest` / `ConfigMigrationTest` / `SmsInboxTest` / `AndroidMailTest` / `MailSettingsUiTest` / `LanguageUiTest` 共 33 项原生测试通过。198 项中英文 string 键及格式 / 模板占位符一致。已查看中文模板编辑 / 示例预览、英文只读模板卡的实际渲染。开发预览 APK 当时保留 0.2.2 / code 7；后续发布记录见下段。真实设备的邮箱投递仍须单独验收。证据位于本地忽略目录 `deliverables/mail-template-verification.json`，开发预览包为 `deliverables/sms-ferry-mail-template-preview.apk`。
+
+0.2.3 / versionCode 8 发布候选：用户已明确授权提交、发布与应用内更新。最终包与 0.2.2 签名一致；全部 9 个 DEX 与上述开发预览包逐字节一致，复用 33 项模板回归结果。重新运行 43 项单元测试、Lint（0 error / 24 warning）、构建通过，Android 16 的 `ReleaseParserTest` / `UpdateFileProviderTest` / `UpdateUiTest` 共 9 项更新原生测试通过。发布资产 `sms-ferry-0.2.3-debug.apk` 为 12,386,034 bytes，SHA-256 `4104486e3c530c9e619f1d1432b3480b536aa5bdf7a7bcda2fa27764e1f576ac`。下一步核对公开 Release digest、旧版应用实际下载与覆盖升级、官网发布元数据；未安装 S21，不将发布当作真机转发验收。
+
 - `app/src/test/.../QueueRunnerTest`：相同正文、退避、结果不明、认证、目的地、暂停、取消、批次。
 - `MailValidationTest`：地址头注入、授权码、长 Unicode MIME。
+- `MailTemplateTest`：默认兼容、单次替换、长短信完整性、模板变量 / 长度 / 必留正文校验、标题注入与 MIME 往返。
 - `SmtpIntegrationTest`：本地 TLS 服务、服务器接受、认证拒绝、DATA 后断线、证书和主机名校验，不访问真实邮箱。新增自定义服务器 / 登录用户名、STARTTLS 升级及拒绝明文认证覆盖。
 - `app/src/androidTest/.../QueueDatabaseTest`：真实 SQLite 并发和唯一 ID、Keystore、篡改、崩溃恢复、SMTP 绑定持久化及旧 payload。
-- `ConfigMigrationTest`：原 QQ 密文只读迁移、通用配置及精确密码往返、未知版本保留。
+- `ConfigMigrationTest`：原 QQ / 无模板 version 2 密文只读兼容、通用配置及精确密码往返、模板加密与重建后读取、未知版本保留。
 - `SmsInboxTest`：隔离模拟器注入短信，真实 provider 查询、相同正文双记录、游标和历史隔离。
 - `AndroidMailTest`：Android 上 Angus provider 与 Unicode MIME，不联网。
 - `LocalPipelineTest`：隔离模拟器后台导入，故意设置 AUTH 阻塞以确保不访问 QQ SMTP。

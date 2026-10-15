@@ -4,6 +4,7 @@ import android.content.Context
 import com.sobigrice.smsrelay.mail.MailAccount
 import com.sobigrice.smsrelay.mail.MailFailure
 import com.sobigrice.smsrelay.mail.MailSecurity
+import com.sobigrice.smsrelay.mail.MailTemplate
 import org.json.JSONObject
 
 class ConfigStore(context: Context, private val crypto: CryptoStore) {
@@ -13,7 +14,9 @@ class ConfigStore(context: Context, private val crypto: CryptoStore) {
         when (value.optInt("version", 1)) {
             1 -> MailAccount.legacyQq(value.getString("sender"), value.getString("code"), value.getString("recipient"))
             2 -> MailAccount.create(value.getString("sender"), value.getString("code"), value.getString("recipient"),
-                value.getString("smtpHost"), value.getInt("smtpPort"), MailSecurity.valueOf(value.getString("security")), value.getString("username"))
+                value.getString("smtpHost"), value.getInt("smtpPort"), MailSecurity.valueOf(value.getString("security")), value.getString("username"),
+                value.optJSONObject("template")?.let { template -> MailTemplate(template.getString("subject"), template.getString("body")) }
+                    ?: MailTemplate.DEFAULT)
             else -> throw IllegalArgumentException("Unsupported saved account version")
         }
     }
@@ -21,7 +24,8 @@ class ConfigStore(context: Context, private val crypto: CryptoStore) {
         val encrypted = crypto.encrypt(JSONObject().put("version", 2).put("sender", account.sender)
             .put("code", account.authorizationCode).put("recipient", account.recipient)
             .put("smtpHost", account.smtpHost).put("smtpPort", account.smtpPort)
-            .put("security", account.security.name).put("username", account.username).toString())
+            .put("security", account.security.name).put("username", account.username)
+            .put("template", JSONObject().put("subject", account.template.subject).put("body", account.template.body)).toString())
         check(preferences.edit().putString("account", encrypted).remove("fault").commit())
     }
     var enabled: Boolean

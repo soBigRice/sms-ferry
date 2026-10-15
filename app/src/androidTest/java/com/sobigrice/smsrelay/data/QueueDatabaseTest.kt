@@ -102,5 +102,21 @@ class QueueDatabaseTest {
         assertTrue(restored.belongsTo(legacy))
         assertFalse(restored.belongsTo(legacy.copy(smtpHost = "smtp.example.org")))
         assertEquals(original.recipientAddress, restored.recipientAddress)
+        assertEquals(MailTemplate.DEFAULT, restored.template)
+    }
+
+    @Test fun templateSnapshotSurvivesReopenAndExplicitRetry() {
+        val template = MailTemplate("saved-template {{sender}}", "{{time}}\n{{body}}")
+        val original = job().copy(template = template)
+        queue.enqueue(original)
+        queue.close(); queue = QueueDatabase(context, crypto, name)
+        assertEquals(template, queue.job(original.id)!!.template)
+        assertEquals(template, queue.claimNext(true)!!.template)
+        queue.finish(original.id, JobState.UNCERTAIN, MailFailure.UNKNOWN)
+        queue.retry(original.id)
+        // 旧记录的缺省身份在写入时规范化；其余快照必须完整保留。 / Legacy identity is normalized; all other snapshot fields must survive.
+        assertEquals(original.copy(smtpIdentity = original.deliveryIdentity()), queue.claimNext(true))
+        val bytes = context.getDatabasePath(name).readBytes().toString(Charsets.UTF_8)
+        assertFalse(bytes.contains("saved-template"))
     }
 }

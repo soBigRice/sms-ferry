@@ -124,6 +124,7 @@ class QueueDatabase(private val context: Context, private val crypto: CryptoStor
         put("id", job.id); put("sourceId", job.sourceId ?: JSONObject.NULL)
         put("sender", job.sourceSender); put("body", job.body); put("receivedAt", job.receivedAt)
         put("account", job.accountAddress); put("recipient", job.recipientAddress); put("kind", job.kind.name)
+        put("template", JSONObject().put("subject", job.template.subject).put("body", job.template.body))
         put("smtp", job.deliveryIdentity().let { JSONObject().put("host", it.host).put("port", it.port)
             .put("security", it.security.name).put("username", it.username) })
     }.toString())
@@ -133,7 +134,8 @@ class QueueDatabase(private val context: Context, private val crypto: CryptoStor
             j.getString("sender"), j.getString("body"), j.getLong("receivedAt"),
             j.getString("account"), j.getString("recipient"), JobKind.valueOf(j.getString("kind")),
             j.optJSONObject("smtp")?.let { SmtpIdentity(it.getString("host"), it.getInt("port"),
-                MailSecurity.valueOf(it.getString("security")), it.getString("username")) })
+                MailSecurity.valueOf(it.getString("security")), it.getString("username")) },
+            j.optJSONObject("template")?.let { MailTemplate(it.getString("subject"), it.getString("body")) } ?: MailTemplate.DEFAULT)
     }
 }
 
