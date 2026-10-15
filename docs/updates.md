@@ -35,6 +35,8 @@
 
 `UpdatePolicyTest` 覆盖版本排序、升级方向、渠道、URL 和摘要契约；`ReleaseParserTest` 在隔离 Android 模拟器覆盖真实 JSON 解析与 APK 签名元数据；`UpdateFileProviderTest` 验证安装器仅能读取更新缓存目录；`UpdateUiTest` 覆盖下载前不可安装、下载期间不可重复提交、失败可重试而不误报最新。实际结果与仍待验收范围见 PROJECT_MAP 的当前版本验证记录。
 
+2026-10-15 已验证公开 0.2.2 / code 7 在隔离 Android 16 内发现并下载 [0.2.3 / code 8](https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.3)，通过全部身份 / 摘要校验和系统安装器覆盖安装；虚构回环 SMTP 账号密文、一个测试队列的 payload、暂停状态和游标保持。真实 S21 转发与邮箱投递仍须单独验收。本地详细证据为 `deliverables/release-0.2.3-verification.json`，不随源码发布。
+
 实现采用项目现有协程、Android HTTPS、PackageManager、AndroidX FileProvider 和系统安装器，不新增第三方 updater SDK。已有通用更新库会增加依赖且仍需补齐本项目的预览版、签名与摘要契约，当前范围用平台能力即可完成。
 
 来源：[GitHub Releases API](https://docs.github.com/en/rest/releases/releases)、[Release asset digest](https://docs.github.com/en/rest/releases/assets)、[安装来源授权](https://developer.android.com/reference/android/content/pm/PackageManager#canRequestPackageInstalls())、[FileProvider](https://developer.android.com/reference/androidx/core/content/FileProvider)。核查于 2026-10-14，minSdk 26 / targetSdk 35 / compileSdk 36。

@@ -120,7 +120,9 @@ stateDiagram-v2
 
 2026-10-15 邮件模板实现验证：43 项单元测试通过（含模板与本地 TLS 发送）、Lint 0 error / 24 warning、App 与测试 APK 构建通过；隔离 Android 16 的 `QueueDatabaseTest` / `ConfigMigrationTest` / `SmsInboxTest` / `AndroidMailTest` / `MailSettingsUiTest` / `LanguageUiTest` 共 33 项原生测试通过。198 项中英文 string 键及格式 / 模板占位符一致。已查看中文模板编辑 / 示例预览、英文只读模板卡的实际渲染。开发预览 APK 当时保留 0.2.2 / code 7；后续发布记录见下段。真实设备的邮箱投递仍须单独验收。证据位于本地忽略目录 `deliverables/mail-template-verification.json`，开发预览包为 `deliverables/sms-ferry-mail-template-preview.apk`。
 
-0.2.3 / versionCode 8 发布候选：用户已明确授权提交、发布与应用内更新。最终包与 0.2.2 签名一致；全部 9 个 DEX 与上述开发预览包逐字节一致，复用 33 项模板回归结果。重新运行 43 项单元测试、Lint（0 error / 24 warning）、构建通过，Android 16 的 `ReleaseParserTest` / `UpdateFileProviderTest` / `UpdateUiTest` 共 9 项更新原生测试通过。发布资产 `sms-ferry-0.2.3-debug.apk` 为 12,386,034 bytes，SHA-256 `4104486e3c530c9e619f1d1432b3480b536aa5bdf7a7bcda2fa27764e1f576ac`。下一步核对公开 Release digest、旧版应用实际下载与覆盖升级、官网发布元数据；未安装 S21，不将发布当作真机转发验收。
+0.2.3 / versionCode 8 已按用户授权发布为 [GitHub 预览版](https://github.com/soBigRice/sms-ferry/releases/tag/v0.2.3)，源码 / Tag 基准 `583bd22`；官网元数据提交 `76644fc`，Pages run `38700498423` 成功，公开中英文页面及下载链接 / 摘要均与资产一致。最终包与 0.2.2 签名一致；全部 9 个 DEX 与上述开发预览包逐字节一致，复用 33 项模板回归结果。重新运行 43 项单元测试、Lint（0 error / 24 warning）、构建通过，Android 16 的 `ReleaseParserTest` / `UpdateFileProviderTest` / `UpdateUiTest` 共 9 项更新原生测试通过。发布资产 `sms-ferry-0.2.3-debug.apk` 为 12,386,034 bytes，SHA-256 `4104486e3c530c9e619f1d1432b3480b536aa5bdf7a7bcda2fa27764e1f576ac`；匿名公共 API / 下载及 GitHub asset digest 已核对。
+
+实际 OTA 验证：隔离 Android 16 模拟器安装已公开的 0.2.2 / code 7，界面保存虚构账号（仅回环 SMTP）并排队一封测试邮件；从旧版「检查更新」发现 0.2.3，真实下载后校验通过，缓存 APK 与公开资产逐字节一致。经安装来源授权、系统确认覆盖安装为 0.2.3 / code 8；升级前后邮箱配置密文、队列 ID / payload、开启标记与扫描游标一致，保持暂停。网络经本机既有代理连通 GitHub，不改应用下载规则或 TLS 校验。证据见本地忽略目录 `deliverables/release-0.2.3-verification.json`。未安装 S21，真实设备的转发恢复、邮箱投递与主观体验不在本次发布验证结论中。
 
 - `app/src/test/.../QueueRunnerTest`：相同正文、退避、结果不明、认证、目的地、暂停、取消、批次。
 - `MailValidationTest`：地址头注入、授权码、长 Unicode MIME。
